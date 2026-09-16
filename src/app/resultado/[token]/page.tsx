@@ -63,7 +63,7 @@ export default async function PaginaResultado({
   const roadmap = ROADMAPS[fase];
   const ruta = fase[0] as Ruta;
   const esDemo = token.startsWith("demo-");
-  const enlaceAsesoria = urlAsesoria(identificador, roadmap.parteA.titulo);
+  const enlaceAsesoria = await urlAsesoria(identificador, roadmap.parteA.titulo);
 
   return (
     <BrandBackdrop

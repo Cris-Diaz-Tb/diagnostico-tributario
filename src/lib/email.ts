@@ -60,7 +60,8 @@ export async function enviarRoadmapPorEmail({
   const urlResultado = `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/resultado/${token}`;
   const saludo = nombre ? `Hola ${escaparHtml(nombre)},` : "Hola,";
   const enlaceAsesoria =
-    urlAsesoria(identificador ?? token, roadmap.parteA.titulo) ?? COPY.marca.instagramUrl;
+    (await urlAsesoria(identificador ?? token, roadmap.parteA.titulo)) ??
+    COPY.marca.instagramUrl;
   const botonAsesoria = enlaceAsesoria.includes("instagram.com")
     ? COPY.resultado.ctaSinEnlace
     : COPY.resultado.ctaBoton;

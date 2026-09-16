@@ -7,7 +7,10 @@ import { idDeEvento, type EventoMeta } from "./meta-eventos";
  * que sobreviven al bloqueo llegan por aquí, el resto por servidor, y el
  * event_id compartido evita que Meta los cuente dos veces.
  *
- * Sin NEXT_PUBLIC_META_PIXEL_ID es un no-op, igual que lib/analytics.ts.
+ * El id del pixel ya no viene de una variable de entorno: lo resuelve
+ * <MetaPixel /> en runtime (panel /admin/configuracion, con
+ * NEXT_PUBLIC_META_PIXEL_ID como respaldo) y lo pasa a iniciarPixel().
+ * Sin id, todo es no-op, igual que lib/analytics.ts.
  */
 
 type Fbq = ((...args: unknown[]) => void) & {
@@ -26,14 +29,17 @@ declare global {
 
 const EVENTOS_ESTANDAR: ReadonlySet<EventoMeta> = new Set(["Lead"]);
 
+/** Id activo en esta pestaña, fijado por iniciarPixel(). */
+let idActivo: string | undefined;
+
 export function pixelId(): string | undefined {
-  return process.env.NEXT_PUBLIC_META_PIXEL_ID;
+  return idActivo;
 }
 
 /** Carga el script del pixel una sola vez y dispara el PageView inicial. */
-export function iniciarPixel(): void {
-  const id = pixelId();
+export function iniciarPixel(id: string | undefined): void {
   if (!id || typeof window === "undefined" || window.fbq) return;
+  idActivo = id;
 
   // Stub oficial de Meta: encola los eventos disparados antes de que el
   // script termine de cargar, para no perder los primeros.

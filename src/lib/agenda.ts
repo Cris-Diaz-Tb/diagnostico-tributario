@@ -1,9 +1,12 @@
+import "server-only";
 import { COPY } from "@/content/copy";
+import { valorConfig } from "@/lib/configuracion";
 
 /**
  * Enlace del botón "Quiero agendar mi asesoría".
  *
- * NEXT_PUBLIC_URL_ASESORIA puede ser:
+ * Se configura en /admin/configuracion (o con NEXT_PUBLIC_URL_ASESORIA
+ * como respaldo). Puede ser:
  * - Un enlace de WhatsApp (wa.me o api.whatsapp.com): se prellena el
  *   mensaje con el resultado y un código corto del diagnóstico, para que
  *   el equipo o el agente de GoHighLevel sepa qué respondió la persona.
@@ -12,8 +15,11 @@ import { COPY } from "@/content/copy";
  *
  * Sin la variable devuelve null y el botón cae al Instagram de la marca.
  */
-export function urlAsesoria(identificador: string, resultado: string): string | null {
-  const base = process.env.NEXT_PUBLIC_URL_ASESORIA?.trim();
+export async function urlAsesoria(
+  identificador: string,
+  resultado: string
+): Promise<string | null> {
+  const base = (await valorConfig("url_asesoria"))?.trim();
   if (!base) return null;
 
   try {
@@ -26,7 +32,7 @@ export function urlAsesoria(identificador: string, resultado: string): string | 
     }
     return url.toString();
   } catch {
-    console.warn("[asesoria] NEXT_PUBLIC_URL_ASESORIA no es una URL válida, se oculta el enlace.");
+    console.warn("[asesoria] La URL de asesoría no es válida, se oculta el enlace.");
     return null;
   }
 }

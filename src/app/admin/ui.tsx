@@ -28,6 +28,7 @@ const PESTANAS = [
   { href: "/admin", texto: "Embudo" },
   { href: "/admin/abandonos", texto: "Abandonos" },
   { href: "/admin/utm", texto: "Atribución" },
+  { href: "/admin/configuracion", texto: "Configuración" },
 ];
 
 export function Marco({
