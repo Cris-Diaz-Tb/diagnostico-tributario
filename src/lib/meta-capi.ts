@@ -147,47 +147,93 @@ export async function enviarEventoCapi({
 export const _internos = { hash, hashTelefono, construirUserData };
 
 /**
- * Comprueba que el pixel y el token de la API de Conversiones sirven,
- * sin enviar ningún evento: pregunta a Meta por el dataset. Lo usa el
- * botón "Probar conexión" de /admin/configuracion.
+ * Comprueba que el pixel y el token sirven, usando el MISMO endpoint que
+ * el envío real de eventos.
+ *
+ * Por qué no se consulta `GET /{pixel}` para leer su nombre: los tokens
+ * que genera Events Manager para la API de Conversiones pueden enviar
+ * eventos pero no suelen poder leer los metadatos del dataset, así que
+ * esa vía daba "Missing Permission" con credenciales perfectamente
+ * válidas.
+ *
+ * Sin código de prueba configurado se manda `data: []`: Meta valida token
+ * y permisos primero, y solo entonces responde que el array va vacío. Ese
+ * error concreto es, justamente, la prueba de que las credenciales sirven,
+ * y no ensucia los datos reales con un evento inventado.
+ *
+ * Con código de prueba configurado sí se envía un evento real, que aparece
+ * en Events Manager → Probar eventos, sin contaminar las conversiones.
  */
+function esErrorDeArrayVacio(mensaje: string): boolean {
+  return /param data/i.test(mensaje) && /non-empty|empty|required/i.test(mensaje);
+}
+
 export async function probarCredencialesMeta(): Promise<{
   ok: boolean;
   detalle: string;
 }> {
-  const [pixelId, token, versionApi] = await Promise.all([
+  const [pixelId, token, versionApi, testEventCode] = await Promise.all([
     valorConfig("meta_pixel_id"),
     valorConfig("meta_capi_token"),
     valorConfig("meta_api_version"),
+    valorConfig("meta_test_event_code"),
   ]);
 
   if (!pixelId) return { ok: false, detalle: "Falta el ID del pixel." };
   if (!token) return { ok: false, detalle: "Falta el token de la API de Conversiones." };
 
   const version = versionApi || VERSION_API_POR_DEFECTO;
+
+  const cuerpo: Record<string, unknown> = { data: [] };
+  if (testEventCode) {
+    cuerpo.test_event_code = testEventCode;
+    cuerpo.data = [
+      {
+        event_name: "PageView",
+        event_time: Math.floor(Date.now() / 1000),
+        event_id: `prueba-panel-${Date.now()}`,
+        action_source: "website",
+        user_data: {},
+      },
+    ];
+  }
+
   try {
     const respuesta = await fetch(
-      `https://graph.facebook.com/${version}/${pixelId}?fields=id,name&access_token=${encodeURIComponent(token)}`
+      `https://graph.facebook.com/${version}/${pixelId}/events?access_token=${encodeURIComponent(token)}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(cuerpo),
+      }
     );
     const datos = (await respuesta.json()) as {
-      id?: string;
-      name?: string;
+      events_received?: number;
       error?: { message?: string };
     };
 
-    if (!respuesta.ok || datos.error) {
+    if (respuesta.ok) {
       return {
-        ok: false,
-        detalle: datos.error?.message ?? `Meta respondió ${respuesta.status}.`,
+        ok: true,
+        detalle: testEventCode
+          ? "Evento de prueba enviado. Revísalo en Events Manager → Probar eventos."
+          : "El token puede enviar eventos a este pixel.",
       };
     }
-    return {
-      ok: true,
-      detalle: datos.name
-        ? `Conectado al dataset "${datos.name}" (${datos.id}).`
-        : `Conectado al dataset ${datos.id}.`,
-    };
+
+    const mensaje = datos.error?.message ?? `Meta respondió ${respuesta.status}.`;
+    if (esErrorDeArrayVacio(mensaje)) {
+      return {
+        ok: true,
+        detalle:
+          "El token puede enviar eventos a este pixel. No se envió ningún evento de prueba, para no alterar tus datos.",
+      };
+    }
+    return { ok: false, detalle: mensaje };
   } catch (err) {
     return { ok: false, detalle: `No se pudo contactar a Meta: ${String(err)}` };
   }
 }
+
+/** Solo para tests: la heurística que distingue el error inofensivo. */
+export const _pruebaInternos = { esErrorDeArrayVacio };

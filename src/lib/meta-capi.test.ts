@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { describe, expect, it } from "vitest";
-import { _internos } from "./meta-capi";
+import { _internos, _pruebaInternos } from "./meta-capi";
 import { idDeEvento, nuevoIdBase } from "./meta-eventos";
 import { construirFbc } from "./utm";
 
@@ -103,5 +103,20 @@ describe("reconstrucción de _fbc desde fbclid", () => {
     expect(construirFbc("IwAR123abc", 1700000000000)).toBe(
       "fb.1.1700000000000.IwAR123abc"
     );
+  });
+});
+
+describe("prueba de credenciales del panel", () => {
+  it("reconoce el error de array vacío como credenciales válidas", () => {
+    const { esErrorDeArrayVacio } = _pruebaInternos;
+    expect(esErrorDeArrayVacio("(#100) param data must be non-empty.")).toBe(true);
+    expect(esErrorDeArrayVacio("(#100) param data is required")).toBe(true);
+  });
+
+  it("no confunde un problema de permisos con el array vacío", () => {
+    const { esErrorDeArrayVacio } = _pruebaInternos;
+    expect(esErrorDeArrayVacio("(#100) Missing Permission")).toBe(false);
+    expect(esErrorDeArrayVacio("Invalid OAuth access token")).toBe(false);
+    expect(esErrorDeArrayVacio("(#190) Error validating access token")).toBe(false);
   });
 });
