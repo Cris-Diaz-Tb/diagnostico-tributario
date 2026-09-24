@@ -66,11 +66,12 @@ export const COPY = {
   gate: {
     titulo: "Tu diagnóstico está listo",
     subtitulo:
-      "Déjanos tu nombre y correo para desbloquear tus 3 pasos concretos y proteger tu patrimonio.",
+      "Déjanos tus datos para desbloquear tus 3 pasos concretos y proteger tu patrimonio.",
     labelNombre: "Tu nombre",
     labelEmail: "Tu correo",
-    labelTelefono: "WhatsApp (opcional)",
+    labelTelefono: "Tu WhatsApp",
     placeholderTelefono: "+56 9 1234 5678",
+    ayudaTelefono: "Te confirmamos por aquí la hora de tu asesoría.",
     consentimiento:
       "Acepto recibir mi diagnóstico y correos de Cris. Tributario sobre tributación e inversión inmobiliaria. Puedo darme de baja cuando quiera.",
     boton: "Desbloquear mi diagnóstico completo",
@@ -86,13 +87,9 @@ export const COPY = {
       "Te enviamos este diagnóstico a tu correo para que vuelvas a él cuando quieras.",
     ctaTitulo: "Tu siguiente paso",
     ctaBoton: "Quiero agendar mi asesoría",
+    ctaNota:
+      "Eliges el día y la hora que te acomoden. La reserva queda confirmada al instante.",
     ctaSinEnlace: "Escríbenos por Instagram",
-  },
-
-  /** Mensaje prellenado cuando el botón de asesoría abre WhatsApp. */
-  whatsapp: {
-    mensaje: (resultado: string, codigo: string) =>
-      `Hola, hice el diagnóstico tributario (resultado: ${resultado}, código ${codigo}) y quiero agendar mi asesoría.`,
   },
 
   avisoLegal:
@@ -109,8 +106,10 @@ export const COPY = {
 
   errores: {
     generico: "Algo salió mal. Intenta de nuevo en unos segundos.",
-    emailInvalido: "Revisa tu correo, parece que tiene un error.",
     consentimientoRequerido: "Necesitas aceptar para recibir tu diagnóstico.",
+    telefonoInvalido: "Revisa tu WhatsApp, parece que le faltan dígitos.",
+    /** El servidor rechazó los datos y no sabemos cuál campo fue. */
+    datosInvalidos: "Revisa tus datos, hay algo que no cuadra.",
     resultadoNoEncontrado: "No encontramos este resultado.",
     resultadoNoEncontradoDetalle:
       "El enlace puede estar incompleto o el diagnóstico ya no existe. Puedes hacer el diagnóstico de nuevo en unos minutos.",

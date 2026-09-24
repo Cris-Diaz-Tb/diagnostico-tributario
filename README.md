@@ -34,7 +34,7 @@ Todo el contenido vive en `src/content/`. Cambiar textos no requiere tocar lógi
 | `preguntas.ts` | Pregunta de propiedades, las 3 rutas, opciones y pesos |
 | `roadmaps.ts` | Los 9 resultados: diagnóstico visible, 3 pasos, cierre y cierre por problema |
 | `ofertas.ts` | Catálogo de asesorías con precio interno y regla del SII |
-| `copy.ts` | Portada, formulario, correo, mensaje de WhatsApp, aviso legal, errores |
+| `copy.ts` | Portada, formulario, correo, textos del botón de agenda, aviso legal, errores |
 
 Si cambian preguntas o pesos, ajustar los umbrales en `src/lib/scoring.ts`, correr `npm test` y subir `VERSION_CUESTIONARIO`.
 
@@ -70,7 +70,13 @@ diag-intencion-nada | diag-intencion-contenido_gratis | diag-intencion-compro_pr
 5. Hacer un diagnóstico de prueba y confirmar en GHL que el contacto llegó con sus etiquetas.
 
 ### 4. Botón de asesoría
-`NEXT_PUBLIC_URL_ASESORIA` con el enlace `https://wa.me/569XXXXXXXX` del número comercial. El mensaje llega prellenado con el resultado y un código de 8 caracteres que coincide con el inicio del id en el panel.
+Por defecto el botón del resultado lleva a la agenda propia, `https://cristributario.cl/diagnostico`: la persona reserva día y hora ella misma, sin cierre manual. No hay que configurar nada.
+
+Al enlace se le añaden `diagnostico` (id completo), `codigo` (los 8 caracteres que coinciden con el inicio del id en el panel) y `fase` (A1…C3), para cruzar la reserva con las respuestas sin preguntarle nada a la persona.
+
+Para cambiar el destino: `/admin/configuracion` → Botón de asesoría, o `NEXT_PUBLIC_URL_ASESORIA` como respaldo. Acepta otro calendario o un link de pago, con los mismos parámetros.
+
+El cierre por WhatsApp se retiró: no hay botón, mensaje prellenado ni soporte en el código. Un `wa.me` configurado se ignora y se agenda igual, así que no puede volver por configuración.
 
 ### 5. Meta, PostHog y cron
 - Pixel y API de Conversiones: `NEXT_PUBLIC_META_PIXEL_ID`, `META_PIXEL_ID`, `META_CAPI_TOKEN`.

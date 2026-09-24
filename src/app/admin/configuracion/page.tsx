@@ -8,6 +8,7 @@ import {
   valorDeEntorno,
   type ClaveConfig,
 } from "@/lib/configuracion";
+import { URL_AGENDA } from "@/lib/agenda";
 import { modoDemo } from "@/lib/supabase";
 import { Marco } from "../ui";
 import { guardarConfigAdmin, probarMetaAdmin } from "./actions";
@@ -22,12 +23,19 @@ const ETIQUETA_ORIGEN = {
   sin_configurar: { texto: "Sin configurar", clase: "bg-white/5 text-white/45 border-white/15" },
 } as const;
 
-async function Origen({ clave }: { clave: ClaveConfig }) {
+async function Origen({
+  clave,
+  textoSinConfigurar,
+}: {
+  clave: ClaveConfig;
+  /** Para claves que sí tienen un valor por defecto en el código. */
+  textoSinConfigurar?: string;
+}) {
   const origen = await origenDeClave(clave);
   const { texto, clase } = ETIQUETA_ORIGEN[origen];
   return (
     <span className={`rounded-full border px-2 py-0.5 text-[11px] font-medium ${clase}`}>
-      {texto}
+      {origen === "sin_configurar" ? (textoSinConfigurar ?? texto) : texto}
     </span>
   );
 }
@@ -189,20 +197,23 @@ export default async function PaginaConfiguracion({
           <div>
             <h2 className="font-display text-xl text-white">Botón de asesoría</h2>
             <p className="mt-1 text-sm text-white/55 leading-relaxed">
-              A dónde lleva el botón del resultado. Con un enlace de WhatsApp, el
-              mensaje llega escrito con la etapa de la persona y un código para
-              buscarla en el panel. Sin esto, el botón lleva al Instagram de la marca.
+              A dónde lleva el botón del resultado. Déjalo vacío y lleva a la agenda
+              propia (<code className="text-white/70">{URL_AGENDA}</code>): la persona
+              elige día y hora ella misma. A la reserva le llegan el id del
+              diagnóstico, su código y su etapa, para cruzarla con las respuestas.
+              Solo cámbialo si mueves la agenda a otro calendario. Los enlaces de
+              WhatsApp ya no funcionan: si pegas uno, se ignora y se agenda igual.
             </p>
           </div>
 
           <Campo
             nombre="url_asesoria"
             etiqueta="Enlace del botón"
-            ayuda="Por ejemplo https://wa.me/569XXXXXXXX, o un link de pago o de agenda."
+            ayuda="Vacío = agenda propia. También acepta otro calendario o un link de pago."
             valor={config.url_asesoria}
-            placeholder={valorDeEntorno("url_asesoria") ?? "https://wa.me/569XXXXXXXX"}
+            placeholder={valorDeEntorno("url_asesoria") ?? URL_AGENDA}
           >
-            <Origen clave="url_asesoria" />
+            <Origen clave="url_asesoria" textoSinConfigurar="Usando la agenda propia" />
           </Campo>
         </section>
 

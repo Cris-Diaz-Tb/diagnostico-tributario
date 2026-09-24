@@ -1,40 +1,64 @@
 import "server-only";
-import { COPY } from "@/content/copy";
 import { valorConfig } from "@/lib/configuracion";
+import type { FaseId } from "@/content/tipos";
+
+/**
+ * Agenda propia: al terminar el diagnóstico la persona elige día y hora
+ * ella misma. No hay cierre manual por WhatsApp.
+ *
+ * Es el destino por defecto del botón, así que funciona aunque no haya
+ * nada configurado ni en el panel ni en el entorno.
+ */
+export const URL_AGENDA = "https://cristributario.cl/diagnostico";
+
+/** Hosts de WhatsApp: se rechazan, el cierre ya no pasa por ahí. */
+const WHATSAPP = /(^|\.)wa\.me$|(^|\.)whatsapp\.com$/;
 
 /**
  * Enlace del botón "Quiero agendar mi asesoría".
  *
- * Se configura en /admin/configuracion (o con NEXT_PUBLIC_URL_ASESORIA
- * como respaldo). Puede ser:
- * - Un enlace de WhatsApp (wa.me o api.whatsapp.com): se prellena el
- *   mensaje con el resultado y un código corto del diagnóstico, para que
- *   el equipo o el agente de GoHighLevel sepa qué respondió la persona.
- * - Cualquier otra URL (página de pago, calendario): se le añade
- *   ?diagnostico=<id> para cruzar la venta con las respuestas.
+ * Se puede apuntar a otro calendario o a una página de pago desde
+ * /admin/configuracion (o con NEXT_PUBLIC_URL_ASESORIA como respaldo).
+ * Sea cual sea, se le añaden `diagnostico`, `codigo` y `fase` para cruzar
+ * la reserva con las respuestas sin preguntarle nada a la persona.
  *
- * Sin la variable devuelve null y el botón cae al Instagram de la marca.
+ * Un enlace de WhatsApp se ignora a propósito: si quedó uno guardado de
+ * antes, o alguien lo vuelve a pegar, se agenda igual.
+ *
+ * Solo devuelve null si la URL configurada no es una URL; ahí el botón
+ * cae al Instagram de la marca.
  */
 export async function urlAsesoria(
   identificador: string,
-  resultado: string
+  fase?: FaseId | null
 ): Promise<string | null> {
-  const base = (await valorConfig("url_asesoria"))?.trim();
-  if (!base) return null;
+  const configurada = (await valorConfig("url_asesoria"))?.trim();
 
   try {
-    const url = new URL(base);
-    const esWhatsapp = /(^|\.)wa\.me$|(^|\.)whatsapp\.com$/.test(url.hostname);
-    if (esWhatsapp) {
-      url.searchParams.set("text", COPY.whatsapp.mensaje(resultado, codigoCorto(identificador)));
-    } else {
-      url.searchParams.set("diagnostico", identificador);
+    const url = new URL(configurada || URL_AGENDA);
+    if (WHATSAPP.test(url.hostname)) {
+      console.warn(
+        "[asesoria] Hay un enlace de WhatsApp configurado. Se ignora: el cierre es por agenda."
+      );
+      return conDatosDelDiagnostico(new URL(URL_AGENDA), identificador, fase);
     }
-    return url.toString();
+    return conDatosDelDiagnostico(url, identificador, fase);
   } catch {
     console.warn("[asesoria] La URL de asesoría no es válida, se oculta el enlace.");
     return null;
   }
+}
+
+/** Contexto que viaja a la agenda para cruzar la reserva con el diagnóstico. */
+function conDatosDelDiagnostico(
+  url: URL,
+  identificador: string,
+  fase?: FaseId | null
+): string {
+  url.searchParams.set("diagnostico", identificador);
+  url.searchParams.set("codigo", codigoCorto(identificador));
+  if (fase) url.searchParams.set("fase", fase);
+  return url.toString();
 }
 
 /** Primeros 8 caracteres del id: suficiente para buscarlo en el panel. */

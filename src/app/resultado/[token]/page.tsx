@@ -63,7 +63,7 @@ export default async function PaginaResultado({
   const roadmap = ROADMAPS[fase];
   const ruta = fase[0] as Ruta;
   const esDemo = token.startsWith("demo-");
-  const enlaceAsesoria = await urlAsesoria(identificador, roadmap.parteA.titulo);
+  const enlaceAsesoria = await urlAsesoria(identificador, fase);
 
   return (
     <BrandBackdrop
@@ -140,6 +140,11 @@ export default async function PaginaResultado({
           >
             {enlaceAsesoria ? COPY.resultado.ctaBoton : COPY.resultado.ctaSinEnlace}
           </a>
+          {enlaceAsesoria && (
+            <p className="mt-4 text-xs text-white/50 leading-relaxed">
+              {COPY.resultado.ctaNota}
+            </p>
+          )}
         </div>
 
         <p className="mt-8 text-center text-xs text-white/40 leading-relaxed">

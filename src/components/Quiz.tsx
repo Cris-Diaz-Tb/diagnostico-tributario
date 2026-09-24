@@ -14,6 +14,7 @@ import type { FaseId, Pregunta, PreguntaAbierta, Ruta } from "@/content/tipos";
 import { leerUtm, leerCookiesMeta } from "@/lib/utm";
 import { trackEvento } from "@/lib/analytics";
 import { trackPixel } from "@/lib/meta-pixel";
+import { telefonoValido } from "@/lib/telefono";
 import {
   idBaseDeSesion,
   progresoPendiente,
@@ -361,6 +362,10 @@ function GateResultado({
   async function enviar(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    if (!telefonoValido(telefono)) {
+      setError(COPY.errores.telefonoInvalido);
+      return;
+    }
     if (!consentimiento) {
       setError(COPY.errores.consentimientoRequerido);
       return;
@@ -375,14 +380,14 @@ function GateResultado({
           id: resultado.id,
           nombre,
           email,
-          telefono: telefono || null,
+          telefono: telefono.trim(),
           consentimiento,
           idBase,
           website: honeypot || undefined,
         }),
       });
       if (res.status === 400) {
-        setError(COPY.errores.emailInvalido);
+        setError(COPY.errores.datosInvalidos);
         setEnviando(false);
         return;
       }
@@ -464,9 +469,12 @@ function GateResultado({
         <Campo
           label={COPY.gate.labelTelefono}
           type="tel"
+          inputMode="tel"
           value={telefono}
           onChange={setTelefono}
           placeholder={COPY.gate.placeholderTelefono}
+          ayuda={COPY.gate.ayudaTelefono}
+          requerido
         />
 
         <label className="flex items-start gap-2.5 text-xs text-white/60 cursor-pointer">
@@ -753,6 +761,8 @@ function Campo({
   onChange,
   requerido,
   placeholder,
+  ayuda,
+  inputMode,
 }: {
   label: string;
   type: string;
@@ -760,6 +770,9 @@ function Campo({
   onChange: (v: string) => void;
   requerido?: boolean;
   placeholder?: string;
+  /** Línea bajo el input: por qué pedimos este dato. */
+  ayuda?: string;
+  inputMode?: "tel" | "email" | "text";
 }) {
   return (
     <label className="block">
@@ -770,8 +783,10 @@ function Campo({
         onChange={(e) => onChange(e.target.value)}
         required={requerido}
         placeholder={placeholder}
+        inputMode={inputMode}
         className="mt-1.5 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-white/30 focus:border-[var(--brand-accent)]/60 focus:outline-none focus:ring-2 focus:ring-[var(--brand-accent)]/25 transition"
       />
+      {ayuda && <span className="mt-1.5 block text-xs text-white/40">{ayuda}</span>}
     </label>
   );
 }

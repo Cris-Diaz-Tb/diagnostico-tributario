@@ -8,13 +8,15 @@ import { FASES } from "@/content/roadmaps";
 import { enviarEventoCapi } from "@/lib/meta-capi";
 import { generarToken } from "@/lib/token";
 import { ipDePeticion, permitirPeticion } from "@/lib/ratelimit";
+import { telefonoValido } from "@/lib/telefono";
 import type { FaseId, Ruta } from "@/content/tipos";
 
 const bodySchema = z.object({
   id: z.string().min(1).max(100),
   nombre: z.string().min(1).max(120),
   email: z.email(),
-  telefono: z.string().max(30).nullish(),
+  // Obligatorio: por WhatsApp se confirma la asesoría agendada.
+  telefono: z.string().max(30).refine(telefonoValido),
   consentimiento: z.literal(true),
   /** Id base de la sesión, para deduplicar el Lead con el pixel. */
   idBase: z.string().min(8).max(100),
@@ -80,7 +82,7 @@ export async function POST(request: Request) {
     .update({
       nombre: body.nombre,
       email: body.email,
-      telefono: body.telefono ?? null,
+      telefono: body.telefono,
       consentimiento: true,
       consentimiento_at: ahora,
       email_capturado_at: ahora,
@@ -146,7 +148,7 @@ export async function POST(request: Request) {
     sincronizarLeadConCrm({
       email: body.email,
       nombre: body.nombre,
-      telefono: body.telefono ?? null,
+      telefono: body.telefono,
       ruta: data.ruta as Ruta,
       fase,
       score: data.score_numerico as number,

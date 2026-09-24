@@ -63,7 +63,8 @@ export default function Privacidad() {
               </li>
               <li>
                 <strong>Tus datos de contacto:</strong> nombre, correo
-                electrónico y, solo si decides darlo, tu número de WhatsApp.
+                electrónico y número de WhatsApp. Los tres son necesarios para
+                entregarte el diagnóstico y coordinar tu asesoría.
               </li>
               <li>
                 <strong>Respuestas parciales:</strong> tus respuestas se guardan a

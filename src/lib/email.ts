@@ -59,12 +59,11 @@ export async function enviarRoadmapPorEmail({
   const ruta = fase[0] as Ruta;
   const urlResultado = `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/resultado/${token}`;
   const saludo = nombre ? `Hola ${escaparHtml(nombre)},` : "Hola,";
-  const enlaceAsesoria =
-    (await urlAsesoria(identificador ?? token, roadmap.parteA.titulo)) ??
-    COPY.marca.instagramUrl;
-  const botonAsesoria = enlaceAsesoria.includes("instagram.com")
-    ? COPY.resultado.ctaSinEnlace
-    : COPY.resultado.ctaBoton;
+  const enlaceAgenda = await urlAsesoria(identificador ?? token, fase);
+  const enlaceAsesoria = enlaceAgenda ?? COPY.marca.instagramUrl;
+  const botonAsesoria = enlaceAgenda
+    ? COPY.resultado.ctaBoton
+    : COPY.resultado.ctaSinEnlace;
   const fuente = "font-family: Helvetica, Arial, sans-serif;";
 
   const filasPasos = roadmap.parteB.pasos
@@ -168,6 +167,11 @@ export async function enviarRoadmapPorEmail({
                   </td>
                 </tr>
               </table>
+              ${
+                enlaceAgenda
+                  ? `<p style="margin:14px 0 0 0; ${fuente} font-size:12px; line-height:1.6; color:${COLOR.textoMuted};">${COPY.resultado.ctaNota}</p>`
+                  : ""
+              }
             </td>
           </tr>
 
