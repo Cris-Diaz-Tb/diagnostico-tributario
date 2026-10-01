@@ -22,6 +22,7 @@ import {
 import type { FaseId, Ruta } from "@/content/tipos";
 import { RUTAS, TEXTO_INTENCION, TEXTO_PROBLEMA } from "@/content/preguntas";
 import { OFERTAS } from "@/content/ofertas";
+import { digitosDeTelefono } from "@/lib/telefono";
 
 export const metadata = { title: "Panel | Cris. Tributario" };
 export const viewport: Viewport = { themeColor: "#0A0F16" };
@@ -80,6 +81,7 @@ interface FilaDiagnostico {
   id: string;
   nombre: string | null;
   email: string | null;
+  telefono: string | null;
   fecha_creacion: string;
   ruta: Ruta;
   fase: FaseId | null;
@@ -94,8 +96,18 @@ interface FilaDiagnostico {
   texto_abierto: string | null;
 }
 
+/**
+ * Enlace wa.me para escribirle al lead desde el panel. wa.me exige el
+ * número con código de país; si la persona lo dejó sin prefijo (8 o 9
+ * dígitos, local chileno) se asume +56.
+ */
+function enlaceWhatsApp(telefono: string): string {
+  const digitos = digitosDeTelefono(telefono);
+  return `https://wa.me/${digitos.length <= 9 ? `56${digitos}` : digitos}`;
+}
+
 const COLUMNAS_TABLA =
-  "id, nombre, email, fecha_creacion, ruta, fase, score_numerico, estado_efectivo, preguntas_respondidas, total_preguntas, oferta_recomendada, problema_principal, problema_otro, nivel_intencion, texto_abierto";
+  "id, nombre, email, telefono, fecha_creacion, ruta, fase, score_numerico, estado_efectivo, preguntas_respondidas, total_preguntas, oferta_recomendada, problema_principal, problema_otro, nivel_intencion, texto_abierto";
 
 export default async function PanelAdmin({
   searchParams,
@@ -319,6 +331,7 @@ export default async function PanelAdmin({
             <tr className="border-b border-white/10 text-left text-xs text-white/45 uppercase tracking-wide">
               <th className="px-4 py-3">Nombre</th>
               <th className="px-4 py-3">Email</th>
+              <th className="px-4 py-3">WhatsApp</th>
               <th className="px-4 py-3">Fecha</th>
               <th className="px-4 py-3">Estado</th>
               <th className="px-4 py-3">Avance</th>
@@ -332,7 +345,7 @@ export default async function PanelAdmin({
           </thead>
           <tbody>
             {filas.length === 0 && (
-              <TablaVacia columnas={11} texto="Sin diagnósticos todavía." />
+              <TablaVacia columnas={12} texto="Sin diagnósticos todavía." />
             )}
             {filas.map((fila) => {
               const etiqueta = ETIQUETA_ESTADO[fila.estado_efectivo];
@@ -344,6 +357,20 @@ export default async function PanelAdmin({
                   <td className="px-4 py-3 text-white/85">{fila.nombre ?? "—"}</td>
                   <td className="px-4 py-3 text-white/70">
                     {fila.email ?? (
+                      <span className="text-white/30 italic">sin capturar</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap text-white/70">
+                    {fila.telefono ? (
+                      <a
+                        href={enlaceWhatsApp(fila.telefono)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:text-[var(--brand-accent-light)] hover:underline"
+                      >
+                        {fila.telefono}
+                      </a>
+                    ) : (
                       <span className="text-white/30 italic">sin capturar</span>
                     )}
                   </td>

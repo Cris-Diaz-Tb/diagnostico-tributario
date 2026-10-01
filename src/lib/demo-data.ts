@@ -32,6 +32,7 @@ export interface DiagnosticoDemo {
   id: string;
   nombre: string | null;
   email: string | null;
+  telefono: string | null;
   fecha_creacion: string;
   ruta: Ruta;
   fase: FaseId | null;
@@ -234,6 +235,7 @@ function generarDataset(): DiagnosticoDemo[] {
       id: `demo-fila-${i}`,
       nombre: estado === "capturado" ? nombre : null,
       email: estado === "capturado" ? `${nombre.toLowerCase()}${i}@ejemplo.com` : null,
+      telefono: estado === "capturado" ? `+56 9 ${String(10000000 + i * 7919).slice(0, 4)} ${String(1000 + i).slice(-4)}` : null,
       fecha_creacion: fecha,
       ruta,
       fase: completo ? fase : null,
