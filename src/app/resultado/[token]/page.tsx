@@ -5,9 +5,11 @@ import { ctaEfectivo, etapaDeFase, FASES, ROADMAPS } from "@/content/roadmaps";
 import { NOMBRE_RUTA } from "@/content/preguntas";
 import { COPY } from "@/content/copy";
 import { urlAsesoria } from "@/lib/agenda";
+import { urlWhatsapp } from "@/lib/whatsapp";
 import type { FaseId, Ruta } from "@/content/tipos";
 import { BadgePlaceholder } from "@/components/BadgePlaceholder";
 import { TrackerResultado } from "@/components/TrackerResultado";
+import { BotonWhatsapp } from "@/components/BotonWhatsapp";
 import { BrandBackdrop } from "@/components/brand/BrandBackdrop";
 
 export const metadata = {
@@ -63,7 +65,10 @@ export default async function PaginaResultado({
   const roadmap = ROADMAPS[fase];
   const ruta = fase[0] as Ruta;
   const esDemo = token.startsWith("demo-");
-  const enlaceAsesoria = await urlAsesoria(identificador, fase);
+  const [enlaceAsesoria, enlaceWhatsapp] = await Promise.all([
+    urlAsesoria(identificador, fase),
+    urlWhatsapp(identificador, fase),
+  ]);
 
   return (
     <BrandBackdrop
@@ -144,6 +149,14 @@ export default async function PaginaResultado({
             <p className="mt-4 text-xs text-white/50 leading-relaxed">
               {COPY.resultado.ctaNota}
             </p>
+          )}
+          {enlaceWhatsapp && (
+            <div className="mt-6 border-t border-white/10 pt-5">
+              <BotonWhatsapp href={enlaceWhatsapp} fase={fase} texto={COPY.whatsapp.boton} />
+              <p className="mt-3 text-xs text-white/50 leading-relaxed">
+                {COPY.whatsapp.nota}
+              </p>
+            </div>
           )}
         </div>
 

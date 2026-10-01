@@ -17,7 +17,8 @@ export type ClaveConfig =
   | "meta_capi_token"
   | "meta_test_event_code"
   | "meta_api_version"
-  | "url_asesoria";
+  | "url_asesoria"
+  | "whatsapp_numero";
 
 export const CLAVES: ClaveConfig[] = [
   "meta_pixel_id",
@@ -25,6 +26,7 @@ export const CLAVES: ClaveConfig[] = [
   "meta_test_event_code",
   "meta_api_version",
   "url_asesoria",
+  "whatsapp_numero",
 ];
 
 /** Variable de entorno que respalda a cada clave. */
@@ -34,6 +36,7 @@ const ENV_DE_CLAVE: Record<ClaveConfig, string[]> = {
   meta_test_event_code: ["META_TEST_EVENT_CODE"],
   meta_api_version: ["META_API_VERSION"],
   url_asesoria: ["NEXT_PUBLIC_URL_ASESORIA"],
+  whatsapp_numero: ["WHATSAPP_NUMERO"],
 };
 
 export type Configuracion = Partial<Record<ClaveConfig, string>>;

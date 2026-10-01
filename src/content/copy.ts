@@ -92,6 +92,14 @@ export const COPY = {
     ctaSinEnlace: "Escríbenos por Instagram",
   },
 
+  whatsapp: {
+    boton: "Prefiero consultar por WhatsApp",
+    nota: "Te respondemos con tu diagnóstico a la vista.",
+    /** Mensaje prellenado. El bot de GHL lee la etapa y el código. */
+    mensaje: (nombreRuta: string, etapa: number, fase: string, codigo: string) =>
+      `Hola Cris, hice el diagnóstico tributario. Mi resultado fue ${nombreRuta}, etapa ${etapa} de 3 (${fase}), y mi código es ${codigo}. Quiero hacer una consulta.`,
+  },
+
   avisoLegal:
     "Este diagnóstico es orientativo y se basa solo en tus respuestas. No constituye asesoría tributaria ni reemplaza la revisión de tu caso por un profesional.",
 

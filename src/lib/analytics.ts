@@ -6,7 +6,7 @@ import posthog from "posthog-js";
  * Wrapper de analytics (PostHog). Sin NEXT_PUBLIC_POSTHOG_KEY → no-op.
  * Eventos del funnel (la Fase 4 del proyecto depende de esta data):
  *   quiz_iniciado · pregunta_respondida · quiz_completado ·
- *   email_capturado · resultado_visitado
+ *   email_capturado · resultado_visitado · whatsapp_click
  */
 
 let inicializado = false;
@@ -30,7 +30,8 @@ export function trackEvento(
     | "pregunta_respondida"
     | "quiz_completado"
     | "email_capturado"
-    | "resultado_visitado",
+    | "resultado_visitado"
+    | "whatsapp_click",
   props?: Record<string, string | number | null>
 ): void {
   if (!asegurarInit()) return;

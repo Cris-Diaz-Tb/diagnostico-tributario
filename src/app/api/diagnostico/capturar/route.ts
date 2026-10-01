@@ -3,13 +3,13 @@ import { z } from "zod";
 import { getSupabase } from "@/lib/supabase";
 import { enviarRoadmapPorEmail } from "@/lib/email";
 import { sincronizarLeadConCrm } from "@/lib/crm";
-import { ofertaRecomendada } from "@/content/ofertas";
+import { COLUMNAS_LEAD, leadDesdeFila, type FilaLead } from "@/lib/lead-diagnostico";
 import { FASES } from "@/content/roadmaps";
 import { enviarEventoCapi } from "@/lib/meta-capi";
 import { generarToken } from "@/lib/token";
 import { ipDePeticion, permitirPeticion } from "@/lib/ratelimit";
 import { telefonoValido } from "@/lib/telefono";
-import type { FaseId, Ruta } from "@/content/tipos";
+import type { FaseId } from "@/content/tipos";
 
 const bodySchema = z.object({
   id: z.string().min(1).max(100),
@@ -92,7 +92,7 @@ export async function POST(request: Request) {
     })
     .eq("id", body.id)
     .select(
-      "token_resultado, ruta, fase, score_numerico, problema_principal, nivel_intencion, fbp, fbc, client_ip, user_agent, utm_source, utm_campaign, utm_content"
+      `${COLUMNAS_LEAD}, fbp, fbc, client_ip, user_agent, utm_source, utm_campaign, utm_content`
     )
     .single();
 
@@ -101,9 +101,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Diagnóstico no encontrado" }, { status: 404 });
   }
 
-  const fase = data.fase as FaseId;
-  const problema = data.problema_principal as string | null;
-  const urlResultado = `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/resultado/${data.token_resultado}`;
+  const lead = await leadDesdeFila(data as unknown as FilaLead);
 
   // Email, CRM y Meta son secundarios al flujo: si fallan, la persona igual
   // ve su resultado en pantalla y el lead ya está en Supabase (queda log).
@@ -145,18 +143,7 @@ export async function POST(request: Request) {
       // con las respuestas de esta persona.
       identificador: body.id,
     }),
-    sincronizarLeadConCrm({
-      email: body.email,
-      nombre: body.nombre,
-      telefono: body.telefono,
-      ruta: data.ruta as Ruta,
-      fase,
-      score: data.score_numerico as number,
-      problema,
-      nivelIntencion: data.nivel_intencion as string | null,
-      oferta: ofertaRecomendada(fase, problema).id,
-      urlResultado,
-    }),
+    sincronizarLeadConCrm(lead),
   ]);
 
   return NextResponse.json({ token: data.token_resultado });

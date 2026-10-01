@@ -1,5 +1,10 @@
-import { describe, expect, it } from "vitest";
-import { etiquetasDeLead, type LeadParaCrm } from "./crm";
+import { afterEach, describe, expect, it } from "vitest";
+import {
+  camposDeContacto,
+  camposDeOportunidad,
+  etiquetasDeLead,
+  type LeadParaCrm,
+} from "./crm";
 
 const LEAD: LeadParaCrm = {
   email: "carolina@ejemplo.cl",
@@ -29,5 +34,51 @@ describe("etiquetas de GoHighLevel", () => {
   it("omite las etiquetas de clasificación que no existen", () => {
     const etiquetas = etiquetasDeLead({ ...LEAD, problema: null, nivelIntencion: null });
     expect(etiquetas).toHaveLength(4);
+  });
+});
+
+describe("campos personalizados de GoHighLevel", () => {
+  const ENV = { ...process.env };
+  afterEach(() => {
+    process.env = { ...ENV };
+  });
+
+  const CON_DATOS: LeadParaCrm = {
+    ...LEAD,
+    datos: {
+      codigo: "1234ABCD",
+      etapa: "Inversionista intermedio, etapa 2 de 3 (B2)",
+      problemaTexto: "Sociedad de inversiones",
+      intencionTexto: "Contenido gratis",
+      ofertaNombre: "Asesoría de sociedad",
+      urlAgenda: "https://agenda.ejemplo.cl/?canal=whatsapp",
+      contexto: "Código: 1234ABCD",
+    },
+  };
+
+  it("solo envía los campos con id configurado", () => {
+    process.env.GHL_CAMPO_CODIGO = "idCodigo";
+    process.env.GHL_CAMPO_CONTEXTO = " idContexto ";
+    delete process.env.GHL_CAMPO_FASE;
+    expect(camposDeContacto(CON_DATOS)).toEqual(
+      expect.arrayContaining([
+        { id: "idCodigo", field_value: "1234ABCD" },
+        { id: "idContexto", field_value: "Código: 1234ABCD" },
+      ])
+    );
+    expect(camposDeContacto(CON_DATOS).some((c) => c.id === "")).toBe(false);
+  });
+
+  it("la oportunidad usa sus propios ids", () => {
+    process.env.GHL_CAMPO_CODIGO = "idContactoCodigo";
+    process.env.GHL_CAMPO_OPP_CODIGO = "idOppCodigo";
+    process.env.GHL_CAMPO_OPP_ETAPA = "idOppEtapa";
+    const campos = camposDeOportunidad(CON_DATOS);
+    expect(campos).toContainEqual({ id: "idOppCodigo", field_value: "1234ABCD" });
+    expect(campos).toContainEqual({
+      id: "idOppEtapa",
+      field_value: "Inversionista intermedio, etapa 2 de 3 (B2)",
+    });
+    expect(campos.some((c) => c.id === "idContactoCodigo")).toBe(false);
   });
 });

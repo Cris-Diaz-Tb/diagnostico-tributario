@@ -217,6 +217,27 @@ export default async function PaginaConfiguracion({
           </Campo>
         </section>
 
+        <section className="brand-glass rounded-2xl p-5 sm:p-6 space-y-5">
+          <div>
+            <h2 className="font-display text-xl text-white">Consulta por WhatsApp</h2>
+            <p className="mt-1 text-sm text-white/55 leading-relaxed">
+              Segundo botón del resultado, debajo de la agenda. Abre el chat con un
+              mensaje que ya trae la etapa y el código del diagnóstico, y el bot de
+              GoHighLevel conversa con ese contexto. Vacío = el botón no aparece.
+            </p>
+          </div>
+
+          <Campo
+            nombre="whatsapp_numero"
+            etiqueta="Número de WhatsApp"
+            ayuda="Con código de país. Los espacios y el + se ignoran."
+            valor={config.whatsapp_numero}
+            placeholder={valorDeEntorno("whatsapp_numero") ?? "+56 9 5174 4388"}
+          >
+            <Origen clave="whatsapp_numero" textoSinConfigurar="Botón oculto" />
+          </Campo>
+        </section>
+
         <div className="flex flex-wrap items-center gap-3">
           <button
             type="submit"

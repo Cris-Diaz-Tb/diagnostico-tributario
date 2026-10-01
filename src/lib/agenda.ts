@@ -4,14 +4,15 @@ import type { FaseId } from "@/content/tipos";
 
 /**
  * Agenda propia: al terminar el diagnóstico la persona elige día y hora
- * ella misma. No hay cierre manual por WhatsApp.
+ * ella misma. La consulta por WhatsApp es un canal aparte, con su propio
+ * botón (lib/whatsapp.ts): este enlace siempre lleva a agendar.
  *
  * Es el destino por defecto del botón, así que funciona aunque no haya
  * nada configurado ni en el panel ni en el entorno.
  */
 export const URL_AGENDA = "https://cristributario.cl/diagnostico";
 
-/** Hosts de WhatsApp: se rechazan, el cierre ya no pasa por ahí. */
+/** Hosts de WhatsApp: se rechazan aquí, ese canal tiene su propio botón. */
 const WHATSAPP = /(^|\.)wa\.me$|(^|\.)whatsapp\.com$/;
 
 /**

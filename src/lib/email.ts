@@ -4,6 +4,7 @@ import { ctaEfectivo, etapaDeFase, roadmapDeFase } from "@/content/roadmaps";
 import { NOMBRE_RUTA } from "@/content/preguntas";
 import { COPY } from "@/content/copy";
 import { urlAsesoria } from "@/lib/agenda";
+import { urlWhatsapp } from "@/lib/whatsapp";
 import type { FaseId, Ruta } from "@/content/tipos";
 
 /**
@@ -59,7 +60,10 @@ export async function enviarRoadmapPorEmail({
   const ruta = fase[0] as Ruta;
   const urlResultado = `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/resultado/${token}`;
   const saludo = nombre ? `Hola ${escaparHtml(nombre)},` : "Hola,";
-  const enlaceAgenda = await urlAsesoria(identificador ?? token, fase);
+  const [enlaceAgenda, enlaceWhatsapp] = await Promise.all([
+    urlAsesoria(identificador ?? token, fase),
+    urlWhatsapp(identificador ?? token, fase),
+  ]);
   const enlaceAsesoria = enlaceAgenda ?? COPY.marca.instagramUrl;
   const botonAsesoria = enlaceAgenda
     ? COPY.resultado.ctaBoton
@@ -170,6 +174,11 @@ export async function enviarRoadmapPorEmail({
               ${
                 enlaceAgenda
                   ? `<p style="margin:14px 0 0 0; ${fuente} font-size:12px; line-height:1.6; color:${COLOR.textoMuted};">${COPY.resultado.ctaNota}</p>`
+                  : ""
+              }
+              ${
+                enlaceWhatsapp
+                  ? `<p style="margin:18px 0 0 0; ${fuente} font-size:13px; line-height:1.6;"><a href="${escaparHtml(enlaceWhatsapp)}" style="color:${COLOR.acentoClaro}; text-decoration:underline;">${COPY.whatsapp.boton}</a></p>`
                   : ""
               }
             </td>
