@@ -40,6 +40,7 @@ export async function leadDesdeFila(fila: FilaLead): Promise<LeadParaCrm> {
   const problema = fila.problema_principal;
   const oferta = ofertaRecomendada(fase, problema);
   const codigo = codigoCorto(fila.id);
+  const nombre = fila.nombre?.trim() || null;
 
   const urlAgenda = await urlAsesoria(fila.id, fase);
   // Marca las reservas que llegan desde la conversación del bot.
@@ -47,7 +48,7 @@ export async function leadDesdeFila(fila: FilaLead): Promise<LeadParaCrm> {
 
   return {
     email: fila.email ?? "",
-    nombre: fila.nombre ?? "",
+    nombre: nombre ?? "",
     telefono: fila.telefono,
     ruta,
     fase,
@@ -69,7 +70,7 @@ export async function leadDesdeFila(fila: FilaLead): Promise<LeadParaCrm> {
       urlAgenda: urlAgendaBot,
       contexto: contextoParaBot({
         codigo,
-        nombre: fila.nombre,
+        nombre,
         fase,
         score: fila.score_numerico,
         problema,
