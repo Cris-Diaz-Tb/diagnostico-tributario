@@ -38,6 +38,13 @@ describe("etiquetas de GoHighLevel", () => {
     expect(etiquetasDeLead({ ...LEAD, avatar: false })).toContain("diag-avatar-no");
   });
 
+  it("marcan a los leads del lanzamiento y no tocan los del directo", () => {
+    expect(etiquetasDeLead({ ...LEAD, origen: "lanzamiento-2026-10" })).toContain(
+      "lanzamiento-oct26"
+    );
+    expect(etiquetasDeLead({ ...LEAD, origen: "directo" })).toEqual(etiquetasDeLead(LEAD));
+  });
+
   it("omite las etiquetas de clasificación que no existen", () => {
     const etiquetas = etiquetasDeLead({ ...LEAD, problema: null, nivelIntencion: null });
     expect(etiquetas).toHaveLength(4);

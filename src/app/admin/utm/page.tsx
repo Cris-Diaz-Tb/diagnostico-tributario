@@ -2,7 +2,8 @@ import { redirect } from "next/navigation";
 import type { Viewport } from "next";
 import { esAdmin } from "@/lib/admin-auth";
 import { getSupabase } from "@/lib/supabase";
-import { utmDemo } from "@/lib/demo-data";
+import { espacioActivo } from "@/lib/espacio-admin";
+import { diagnosticosDemo, utmDemo } from "@/lib/demo-data";
 import { Contador, Filtro, Marco, TablaVacia, porcentaje } from "../ui";
 
 export const metadata = { title: "Atribución | Cris. Tributario" };
@@ -86,15 +87,16 @@ export default async function PanelUtm({
     ? (params.por as Agrupacion)
     : "content";
 
+  const espacio = await espacioActivo();
   const supabase = getSupabase();
   const usandoDemo = !supabase;
 
   let crudas: FilaUtm[];
   if (supabase) {
-    const { data } = await supabase.from("resumen_utm").select("*");
+    const { data } = await supabase.from("resumen_utm").select("*").eq("origen", espacio);
     crudas = (data ?? []) as FilaUtm[];
   } else {
-    crudas = utmDemo();
+    crudas = utmDemo(diagnosticosDemo(espacio));
   }
 
   const filas = agrupar(crudas, nivel);

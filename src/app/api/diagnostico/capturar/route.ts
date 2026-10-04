@@ -9,6 +9,7 @@ import { enviarEventoCapi } from "@/lib/meta-capi";
 import { generarToken } from "@/lib/token";
 import { ipDePeticion, permitirPeticion } from "@/lib/ratelimit";
 import { telefonoValido } from "@/lib/telefono";
+import { datosDeOrigen } from "@/content/origenes";
 import type { FaseId } from "@/content/tipos";
 
 const bodySchema = z.object({
@@ -123,6 +124,7 @@ export async function POST(request: Request) {
           (data.user_agent as string | null) ?? request.headers.get("user-agent"),
       },
       propiedades: {
+        origen: data.origen as string,
         ruta: data.ruta as string,
         propiedades_rango: data.propiedades_rango,
         fase: data.fase as string,
@@ -143,6 +145,7 @@ export async function POST(request: Request) {
       // Viaja al enlace de agendamiento para poder cruzar la llamada
       // con las respuestas de esta persona.
       identificador: body.id,
+      esLanzamiento: Boolean(datosDeOrigen(data.origen).esLanzamiento),
     }),
     sincronizarLeadConCrm(lead),
   ]);

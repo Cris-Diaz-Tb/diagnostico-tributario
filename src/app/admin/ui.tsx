@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { BrandBackdrop } from "@/components/brand/BrandBackdrop";
-import { logoutAdmin, marcarPrueba } from "./actions";
+import { cambiarEspacio, logoutAdmin, marcarPrueba } from "./actions";
 import type { FaseId } from "@/content/tipos";
+import { IDS_ORIGEN, ORIGEN_DIRECTO, ORIGENES } from "@/content/origenes";
+import { espacioActivo } from "@/lib/espacio-admin";
 
 /**
  * Piezas compartidas por las tres vistas del panel (/admin, /admin/abandonos,
@@ -32,7 +34,7 @@ const PESTANAS = [
   { href: "/admin/configuracion", texto: "Configuración" },
 ];
 
-export function Marco({
+export async function Marco({
   children,
   usandoDemo,
   activa,
@@ -41,6 +43,9 @@ export function Marco({
   usandoDemo: boolean;
   activa: string;
 }) {
+  const espacio = await espacioActivo();
+  const datosEspacio = ORIGENES[espacio];
+
   return (
     <BrandBackdrop outerClassName="flex-1" innerClassName="flex-1 px-5 py-8">
       <div className="mx-auto max-w-5xl">
@@ -60,6 +65,34 @@ export function Marco({
             </button>
           </form>
         </div>
+
+        {/* Espacios de datos: cada uno ve solo sus diagnósticos */}
+        <div className="flex flex-wrap items-center gap-2 mt-5 text-sm">
+          <span className="text-white/40">Espacio:</span>
+          {IDS_ORIGEN.map((id) => (
+            <form key={id} action={cambiarEspacio}>
+              <input type="hidden" name="espacio" value={id} />
+              <input type="hidden" name="volver" value={activa} />
+              <button
+                className={`rounded-full px-3 py-1 border transition ${
+                  espacio === id
+                    ? "border-amber-400/50 bg-amber-400/15 text-amber-200"
+                    : "border-white/10 bg-white/5 text-white/60 hover:border-amber-400/40 hover:text-white"
+                }`}
+              >
+                {ORIGENES[id].nombre}
+              </button>
+            </form>
+          ))}
+        </div>
+
+        {espacio !== ORIGEN_DIRECTO && (
+          <p className="mt-3 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2.5 text-xs text-amber-200">
+            Estás viendo <strong className="font-semibold">{datosEspacio.nombre}</strong>
+            {"desde" in datosEspacio && ` (${datosEspacio.desde} al ${datosEspacio.hasta})`}.
+            Estos números no incluyen el diagnóstico directo.
+          </p>
+        )}
 
         <nav className="flex flex-wrap gap-2 mt-5">
           {PESTANAS.map((p) => (

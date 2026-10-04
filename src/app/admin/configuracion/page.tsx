@@ -238,6 +238,28 @@ export default async function PaginaConfiguracion({
           </Campo>
         </section>
 
+        <section className="brand-glass rounded-2xl p-5 sm:p-6 space-y-5">
+          <div>
+            <h2 className="font-display text-xl text-white">Webinar del lanzamiento</h2>
+            <p className="mt-1 text-sm text-white/55 leading-relaxed">
+              Solo para los diagnósticos que entran por{" "}
+              <code className="text-white/70">/lanzamiento</code>. Su resultado
+              invita al webinar en vez de agendar la asesoría, y este es el enlace
+              del botón. Vacío = el resultado muestra la invitación sin botón.
+            </p>
+          </div>
+
+          <Campo
+            nombre="url_webinar"
+            etiqueta="Enlace del webinar"
+            ayuda="El link de la sala o de la página del webinar. Debe empezar con https://"
+            valor={config.url_webinar}
+            placeholder={valorDeEntorno("url_webinar") ?? "https://..."}
+          >
+            <Origen clave="url_webinar" textoSinConfigurar="Sin botón" />
+          </Campo>
+        </section>
+
         <div className="flex flex-wrap items-center gap-3">
           <button
             type="submit"

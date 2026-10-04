@@ -12,6 +12,7 @@ import {
 import { etapaDeFase, ROADMAPS } from "@/content/roadmaps";
 import { COPY } from "@/content/copy";
 import type { FaseId, Pregunta, PreguntaAbierta, Ruta } from "@/content/tipos";
+import { ORIGEN_DIRECTO, type OrigenId } from "@/content/origenes";
 import { leerUtm, leerCookiesMeta } from "@/lib/utm";
 import { trackEvento } from "@/lib/analytics";
 import { trackPixel } from "@/lib/meta-pixel";
@@ -51,7 +52,7 @@ function esperarRestante(inicio: number, minimoMs: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, Math.max(restante, 0)));
 }
 
-export function Quiz() {
+export function Quiz({ origen = ORIGEN_DIRECTO }: { origen?: OrigenId } = {}) {
   const router = useRouter();
   const [etapa, setEtapa] = useState<Etapa>("bifurcacion");
   const [ruta, setRuta] = useState<Ruta | null>(null);
@@ -118,6 +119,7 @@ export function Quiz() {
     // Sin await — la persona nunca espera a la medición.
     if (ruta) {
       registrarProgreso({
+        origen,
         ruta,
         propiedadesRango: rango,
         respuestas: nuevasRespuestas,
@@ -175,11 +177,12 @@ export function Quiz() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          origen,
           ruta,
           propiedadesRango: rango,
           respuestas: todas,
           textos: todosLosTextos,
-          sesionId: sesionIdGuardado(),
+          sesionId: sesionIdGuardado(origen),
           idBase,
           utm: utm
             ? {

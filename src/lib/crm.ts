@@ -1,4 +1,5 @@
 import "server-only";
+import { datosDeOrigen, type OrigenId } from "@/content/origenes";
 import type { FaseId, OfertaId, Ruta } from "@/content/tipos";
 
 /**
@@ -12,6 +13,7 @@ import type { FaseId, OfertaId, Ruta } from "@/content/tipos";
  * Etiquetas: diagnostico · diag-ruta-a · diag-fase-a2 ·
  * diag-oferta-asesoria_patrimonial · diag-problema-herencia ·
  * diag-intencion-nada · diag-propiedades-5_10 · diag-avatar-si
+ * (+ la etiqueta del lanzamiento, ej. lanzamiento-oct26)
  *
  * Campos personalizados: opcionales. Si se definen los ids en las
  * variables GHL_CAMPO_* (contacto) y GHL_CAMPO_OPP_* (oportunidad),
@@ -19,13 +21,16 @@ import type { FaseId, OfertaId, Ruta } from "@/content/tipos";
  * la oportunidad son los que se ven en la carpeta "Diagnóstico".
  *
  * Oportunidad: si está GHL_PIPELINE_DIAGNOSTICO, se crea o actualiza una
- * por contacto en ese pipeline.
+ * por contacto en ese pipeline. Los leads de un lanzamiento no entran:
+ * ese pipeline es del diagnóstico directo.
  *
  * Sin GHL_API_TOKEN o GHL_LOCATION_ID no hace nada (queda log). Un fallo
  * del CRM nunca rompe el flujo: el lead ya está guardado en Supabase.
  */
 
 export interface LeadParaCrm {
+  /** Espacio de datos; sin él se asume el diagnóstico directo. */
+  origen?: OrigenId;
   email: string;
   nombre: string;
   telefono: string | null;
@@ -71,6 +76,7 @@ export function etiquetasDeLead(lead: LeadParaCrm): string[] {
     lead.nivelIntencion ? `diag-intencion-${lead.nivelIntencion}` : null,
     lead.propiedadesRango ? `diag-propiedades-${lead.propiedadesRango}` : null,
     lead.avatar === true ? "diag-avatar-si" : lead.avatar === false ? "diag-avatar-no" : null,
+    datosDeOrigen(lead.origen).etiquetaGhl ?? null,
   ].filter((e): e is string => Boolean(e));
 }
 
@@ -157,6 +163,7 @@ async function upsertOportunidad(
   etapa: "completado" | "whatsapp",
   { token, locationId }: { token: string; locationId: string }
 ): Promise<boolean> {
+  if (datosDeOrigen(lead.origen).esLanzamiento) return false;
   const pipelineId = process.env.GHL_PIPELINE_DIAGNOSTICO?.trim();
   const etapaId = (
     etapa === "whatsapp" ? process.env.GHL_ETAPA_WHATSAPP : process.env.GHL_ETAPA_COMPLETADO
@@ -202,7 +209,9 @@ export async function sincronizarLeadConCrm(
       name: lead.nombre,
       email: lead.email,
       phone: lead.telefono ?? undefined,
-      source: "Diagnóstico web",
+      source: datosDeOrigen(lead.origen).esLanzamiento
+        ? `Diagnóstico ${datosDeOrigen(lead.origen).nombre}`
+        : "Diagnóstico web",
       tags: etiquetasDeLead(lead),
       ...(camposContacto.length > 0 ? { customFields: camposContacto } : {}),
     },

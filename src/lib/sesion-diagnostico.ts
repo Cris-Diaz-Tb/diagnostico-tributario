@@ -1,6 +1,7 @@
 "use client";
 
 import type { Ruta } from "@/content/tipos";
+import { ORIGEN_DIRECTO, type OrigenId } from "@/content/origenes";
 import { atribucionParaEnviar } from "./utm";
 import { nuevoIdBase } from "./meta-eventos";
 
@@ -14,6 +15,15 @@ import { nuevoIdBase } from "./meta-eventos";
  */
 
 const CLAVE_SESION = "dd_sesion_id";
+
+/**
+ * Una sesión por espacio: un diagnóstico directo a medio hacer no debe
+ * continuar dentro del lanzamiento (ni al revés) si se abren en la misma
+ * pestaña. El directo conserva la clave de siempre.
+ */
+function claveSesion(origen: OrigenId): string {
+  return origen === ORIGEN_DIRECTO ? CLAVE_SESION : `${CLAVE_SESION}:${origen}`;
+}
 const CLAVE_ID_BASE = "dd_evento_base";
 
 function leer(clave: string): string | null {
@@ -41,8 +51,8 @@ export function idBaseDeSesion(): string {
   return nuevo;
 }
 
-export function sesionIdGuardado(): string | null {
-  return leer(CLAVE_SESION);
+export function sesionIdGuardado(origen: OrigenId): string | null {
+  return leer(claveSesion(origen));
 }
 
 /**
@@ -53,6 +63,8 @@ export function sesionIdGuardado(): string | null {
 let cadena: Promise<unknown> = Promise.resolve();
 
 export interface ProgresoQuiz {
+  /** Espacio de datos; se guarda al crear la fila. */
+  origen: OrigenId;
   ruta: Ruta;
   /** Rango de propiedades de la bifurcación; se guarda al crear la fila. */
   propiedadesRango: string | null;
@@ -69,7 +81,7 @@ export interface ProgresoQuiz {
 export function registrarProgreso(progreso: ProgresoQuiz): Promise<void> {
   cadena = cadena.then(async () => {
     try {
-      const sesionId = sesionIdGuardado();
+      const sesionId = sesionIdGuardado(progreso.origen);
       const respuesta = await fetch("/api/diagnostico/sesion", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -79,6 +91,7 @@ export function registrarProgreso(progreso: ProgresoQuiz): Promise<void> {
         keepalive: true,
         body: JSON.stringify({
           sesionId,
+          origen: progreso.origen,
           ruta: progreso.ruta,
           propiedadesRango: sesionId ? null : progreso.propiedadesRango,
           respuestas: progreso.respuestas,
@@ -91,7 +104,7 @@ export function registrarProgreso(progreso: ProgresoQuiz): Promise<void> {
       });
       if (!respuesta.ok) return;
       const datos = (await respuesta.json()) as { sesionId: string | null };
-      if (datos.sesionId) escribir(CLAVE_SESION, datos.sesionId);
+      if (datos.sesionId) escribir(claveSesion(progreso.origen), datos.sesionId);
     } catch {
       // Silencio intencional: la medición nunca interrumpe el diagnóstico.
     }

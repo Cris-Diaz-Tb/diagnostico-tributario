@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { esAdmin } from "@/lib/admin-auth";
 import { getSupabase } from "@/lib/supabase";
+import { espacioActivo } from "@/lib/espacio-admin";
 import type { RespuestaDetallada } from "@/lib/scoring";
 import { TEXTO_AVATAR, esAvatar, respuestaBifurcacion } from "@/content/preguntas";
 import type { Ruta } from "@/content/tipos";
@@ -16,6 +17,7 @@ import type { Ruta } from "@/content/tipos";
 const COLUMNAS = [
   "id",
   "codigo",
+  "origen",
   "fecha",
   "estado",
   "es_prueba",
@@ -80,10 +82,13 @@ export async function GET(request: Request) {
   }
 
   const filtroRuta = new URL(request.url).searchParams.get("ruta");
+  // Solo el espacio que se está mirando en el panel.
+  const espacio = await espacioActivo();
 
   let consulta = supabase
     .from("diagnosticos_embudo")
     .select("*")
+    .eq("origen", espacio)
     .order("fecha_creacion", { ascending: false })
     .limit(5000);
 
@@ -101,6 +106,7 @@ export async function GET(request: Request) {
     [
       d.id,
       d.codigo,
+      d.origen,
       d.fecha_creacion,
       d.estado_efectivo,
       d.es_prueba ? "si" : "no",
@@ -140,7 +146,7 @@ export async function GET(request: Request) {
   return new NextResponse(csv, {
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename="diagnosticos-${fecha}.csv"`,
+      "Content-Disposition": `attachment; filename="diagnosticos-${espacio}-${fecha}.csv"`,
       "Cache-Control": "no-store",
     },
   });

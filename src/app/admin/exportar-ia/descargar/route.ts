@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { esAdmin } from "@/lib/admin-auth";
 import { getSupabase } from "@/lib/supabase";
-import { DIAGNOSTICOS_DEMO } from "@/lib/demo-data";
+import { diagnosticosDemo } from "@/lib/demo-data";
+import { espacioActivo } from "@/lib/espacio-admin";
 import { RUTAS } from "@/content/preguntas";
 import type { Ruta } from "@/content/tipos";
 import {
@@ -40,6 +41,8 @@ export async function GET(request: Request) {
   const formato = params.get("formato") === "jsonl" ? "jsonl" : "md";
   const incluirContacto = params.get("contacto") === "1";
   const incluirPruebas = params.get("pruebas") === "1";
+  // Solo el espacio que se está mirando en el panel.
+  const espacio = await espacioActivo();
 
   const supabase = getSupabase();
   let filas: FilaIA[];
@@ -51,6 +54,7 @@ export async function GET(request: Request) {
         .from("diagnosticos_embudo")
         .select(COLUMNAS_IA)
         .in("estado_efectivo", segmentos)
+        .eq("origen", espacio)
         .order("fecha_creacion", { ascending: false })
         .range(inicio, inicio + POR_LOTE - 1);
       if (ruta) consulta = consulta.eq("ruta", ruta);
@@ -67,7 +71,7 @@ export async function GET(request: Request) {
       if (lote.length < POR_LOTE) break;
     }
   } else {
-    filas = DIAGNOSTICOS_DEMO.filter(
+    filas = diagnosticosDemo(espacio).filter(
       (d) =>
         segmentos.includes(d.estado_efectivo as SegmentoIA) &&
         (!ruta || d.ruta === ruta) &&
@@ -87,7 +91,7 @@ export async function GET(request: Request) {
         formato === "jsonl"
           ? "application/x-ndjson; charset=utf-8"
           : "text/markdown; charset=utf-8",
-      "Content-Disposition": `attachment; filename="respuestas-ia-${fecha}.${formato}"`,
+      "Content-Disposition": `attachment; filename="respuestas-ia-${espacio}-${fecha}.${formato}"`,
       "Cache-Control": "no-store",
     },
   });

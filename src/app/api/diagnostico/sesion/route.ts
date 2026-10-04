@@ -8,6 +8,7 @@ import { enviarEventoCapi } from "@/lib/meta-capi";
 import { ipDePeticion, permitirSesion } from "@/lib/ratelimit";
 import { COOKIE_PRUEBA } from "@/lib/prueba";
 import { rangoDePropiedades } from "@/content/preguntas";
+import { origenValido } from "@/content/origenes";
 
 /**
  * Guardado progresivo del diagnóstico.
@@ -51,6 +52,8 @@ const atribucionSchema = z.object({
 const bodySchema = z.object({
   /** Ausente en la primera llamada: ahí es cuando se crea la fila. */
   sesionId: z.string().max(100).nullish(),
+  /** Espacio de datos (directo o un lanzamiento); solo cuenta al crear la fila. */
+  origen: z.string().max(40).nullish(),
   ruta: z.enum(["A", "B", "C"]),
   /** Rango de propiedades de la bifurcación; solo viaja al crear la fila. */
   propiedadesRango: z.string().max(20).nullish(),
@@ -125,11 +128,13 @@ export async function POST(request: Request) {
   // Solo se guarda un rango que exista y que corresponda a la ruta.
   const rango = rangoDePropiedades(body.propiedadesRango);
   const propiedadesRango = rango?.ruta === body.ruta ? rango.id : null;
+  const origen = origenValido(body.origen);
   const { data, error } = await supabase
     .from("diagnosticos")
     .insert({
       token_resultado: generarToken(),
       estado: "iniciado",
+      origen,
       ruta: body.ruta,
       propiedades_rango: propiedadesRango,
       respuestas: parcial.detalle,
@@ -177,6 +182,7 @@ export async function POST(request: Request) {
       userAgent: request.headers.get("user-agent"),
     },
     propiedades: {
+      origen,
       ruta: body.ruta,
       propiedades_rango: propiedadesRango,
       utm_source: atrib?.utm?.source,

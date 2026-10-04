@@ -6,6 +6,11 @@ import {
   preguntasDeRuta,
 } from "@/content/preguntas";
 import { ofertaRecomendada } from "@/content/ofertas";
+import {
+  ORIGEN_DIRECTO,
+  ORIGEN_LANZAMIENTO_OCT26,
+  type OrigenId,
+} from "@/content/origenes";
 import type { RespuestaDetallada } from "@/lib/scoring";
 
 /**
@@ -31,6 +36,7 @@ export type EstadoEfectivo =
 
 export interface DiagnosticoDemo {
   id: string;
+  origen: OrigenId;
   nombre: string | null;
   email: string | null;
   telefono: string | null;
@@ -237,6 +243,9 @@ function generarDataset(): DiagnosticoDemo[] {
 
     filas.push({
       id: `demo-fila-${i}`,
+      // Uno de cada cinco entra por el lanzamiento: así el selector de
+      // espacio del panel también se puede probar sin base de datos.
+      origen: i % 5 === 0 ? ORIGEN_LANZAMIENTO_OCT26 : ORIGEN_DIRECTO,
       nombre: estado === "capturado" ? nombre : null,
       email: estado === "capturado" ? `${nombre.toLowerCase()}${i}@ejemplo.com` : null,
       telefono: estado === "capturado" ? `+56 9 ${String(10000000 + i * 7919).slice(0, 4)} ${String(1000 + i).slice(-4)}` : null,
@@ -274,13 +283,18 @@ function generarDataset(): DiagnosticoDemo[] {
 
 export const DIAGNOSTICOS_DEMO: DiagnosticoDemo[] = generarDataset();
 
-export function resumenDemo(): ResumenFaseDemo[] {
+/** Filas demo de un espacio del panel. */
+export function diagnosticosDemo(origen: OrigenId): DiagnosticoDemo[] {
+  return DIAGNOSTICOS_DEMO.filter((d) => d.origen === origen);
+}
+
+export function resumenDemo(filas: DiagnosticoDemo[] = DIAGNOSTICOS_DEMO): ResumenFaseDemo[] {
   const mapa = new Map<
     string,
     { ruta: Ruta; fase: FaseId; total: number; conEmail: number; scores: number[] }
   >();
 
-  for (const d of DIAGNOSTICOS_DEMO) {
+  for (const d of filas) {
     if (!d.fase || d.score_numerico === null) continue;
     const clave = `${d.ruta}-${d.fase}`;
     const entrada = mapa.get(clave) ?? {
@@ -306,10 +320,10 @@ export function resumenDemo(): ResumenFaseDemo[] {
   }));
 }
 
-export function embudoDemo(): EmbudoDemo[] {
+export function embudoDemo(filas: DiagnosticoDemo[] = DIAGNOSTICOS_DEMO): EmbudoDemo[] {
   const mapa = new Map<Ruta, EmbudoDemo>();
 
-  for (const d of DIAGNOSTICOS_DEMO) {
+  for (const d of filas) {
     const entrada = mapa.get(d.ruta) ?? {
       ruta: d.ruta,
       iniciados: 0,
@@ -331,10 +345,10 @@ export function embudoDemo(): EmbudoDemo[] {
   return Array.from(mapa.values());
 }
 
-export function abandonoPorPreguntaDemo(): AbandonoPreguntaDemo[] {
+export function abandonoPorPreguntaDemo(filas: DiagnosticoDemo[] = DIAGNOSTICOS_DEMO): AbandonoPreguntaDemo[] {
   const mapa = new Map<string, AbandonoPreguntaDemo>();
 
-  for (const d of DIAGNOSTICOS_DEMO) {
+  for (const d of filas) {
     if (d.estado_efectivo !== "abandono_preguntas" || !d.ultima_pregunta_id) continue;
     const clave = `${d.ruta}-${d.ultima_pregunta_id}`;
     const entrada = mapa.get(clave) ?? {
@@ -350,10 +364,10 @@ export function abandonoPorPreguntaDemo(): AbandonoPreguntaDemo[] {
   return Array.from(mapa.values());
 }
 
-export function utmDemo(): ResumenUtmDemo[] {
+export function utmDemo(filas: DiagnosticoDemo[] = DIAGNOSTICOS_DEMO): ResumenUtmDemo[] {
   const mapa = new Map<string, ResumenUtmDemo>();
 
-  for (const d of DIAGNOSTICOS_DEMO) {
+  for (const d of filas) {
     const clave = [d.utm_source, d.utm_medium, d.utm_campaign, d.utm_content].join("|");
     const entrada = mapa.get(clave) ?? {
       utm_source: d.utm_source ?? "(directo)",

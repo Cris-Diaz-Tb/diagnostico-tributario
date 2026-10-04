@@ -2,8 +2,9 @@ import { redirect } from "next/navigation";
 import type { Viewport } from "next";
 import { esAdmin } from "@/lib/admin-auth";
 import { getSupabase } from "@/lib/supabase";
+import { espacioActivo } from "@/lib/espacio-admin";
 import {
-  DIAGNOSTICOS_DEMO,
+  diagnosticosDemo,
   abandonoPorPreguntaDemo,
   type EstadoEfectivo,
 } from "@/lib/demo-data";
@@ -66,6 +67,7 @@ export default async function PanelAbandonos({
   const vista: Vista = params.vista === "completados" ? "completados" : "abandonos";
   const estados = ESTADOS_DE_VISTA[vista];
 
+  const espacio = await espacioActivo();
   const supabase = getSupabase();
   const usandoDemo = !supabase;
 
@@ -76,7 +78,8 @@ export default async function PanelAbandonos({
   if (supabase) {
     const { data: histograma } = await supabase
       .from("abandono_por_pregunta")
-      .select("*");
+      .select("*")
+      .eq("origen", espacio);
     porPregunta = (histograma ?? []) as FilaAbandonoPregunta[];
 
     let consulta = supabase
@@ -86,6 +89,7 @@ export default async function PanelAbandonos({
         { count: "exact" }
       )
       .in("estado_efectivo", estados)
+      .eq("origen", espacio)
       .order("ultima_actividad_at", { ascending: false })
       .range((pagina - 1) * POR_PAGINA, pagina * POR_PAGINA - 1);
 
@@ -95,8 +99,9 @@ export default async function PanelAbandonos({
     filas = (data ?? []) as FilaAbandono[];
     total = count ?? 0;
   } else {
-    porPregunta = abandonoPorPreguntaDemo();
-    const todas = DIAGNOSTICOS_DEMO.filter(
+    const delEspacio = diagnosticosDemo(espacio);
+    porPregunta = abandonoPorPreguntaDemo(delEspacio);
+    const todas = delEspacio.filter(
       (d) =>
         estados.includes(d.estado_efectivo) &&
         (!filtroRuta || d.ruta === filtroRuta)

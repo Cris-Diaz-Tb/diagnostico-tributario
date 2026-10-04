@@ -12,6 +12,7 @@ import {
   esAvatar,
   rangoDePropiedades,
 } from "@/content/preguntas";
+import { origenValido } from "@/content/origenes";
 import type { FaseId, Ruta } from "@/content/tipos";
 
 /**
@@ -22,7 +23,7 @@ import type { FaseId, Ruta } from "@/content/tipos";
 
 /** Columnas que necesita `leadDesdeFila`. */
 export const COLUMNAS_LEAD =
-  "id, token_resultado, nombre, email, telefono, ruta, fase, score_numerico, problema_principal, problema_otro, nivel_intencion, texto_abierto, respuestas, propiedades_rango";
+  "id, token_resultado, nombre, email, telefono, ruta, fase, score_numerico, problema_principal, problema_otro, nivel_intencion, texto_abierto, respuestas, propiedades_rango, origen";
 
 export interface FilaLead {
   id: string;
@@ -39,6 +40,7 @@ export interface FilaLead {
   texto_abierto: string | null;
   respuestas: RespuestaDetallada[] | null;
   propiedades_rango: string | null;
+  origen: string | null;
 }
 
 export async function leadDesdeFila(fila: FilaLead): Promise<LeadParaCrm> {
@@ -54,6 +56,7 @@ export async function leadDesdeFila(fila: FilaLead): Promise<LeadParaCrm> {
   const urlAgendaBot = urlAgenda ? conCanal(urlAgenda, "whatsapp") : null;
 
   return {
+    origen: origenValido(fila.origen),
     email: fila.email ?? "",
     nombre: nombre ?? "",
     telefono: fila.telefono,

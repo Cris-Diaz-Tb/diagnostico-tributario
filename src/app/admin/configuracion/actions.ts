@@ -23,6 +23,7 @@ export async function guardarConfigAdmin(formData: FormData): Promise<void> {
     meta_api_version: texto("meta_api_version"),
     url_asesoria: texto("url_asesoria"),
     whatsapp_numero: texto("whatsapp_numero"),
+    url_webinar: texto("url_webinar"),
   };
 
   const tokenNuevo = texto("meta_capi_token");

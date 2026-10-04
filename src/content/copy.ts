@@ -100,6 +100,28 @@ export const COPY = {
     boton: "Todavía no. Quiero ir a la clase en vivo del 5 de noviembre",
   },
 
+  /**
+   * Lanzamiento (entrada /lanzamiento). Mismo diagnóstico; cambian la
+   * portada y el siguiente paso del resultado, que invita al webinar.
+   */
+  lanzamiento: {
+    titulo: "Llega al webinar sabiendo exactamente dónde estás parado",
+    subtitulo:
+      "Antes de la clase, responde unas pocas preguntas y descubre en 2 minutos en qué etapa está tu patrimonio inmobiliario. Así vas a saber qué parte del webinar aplica a tu caso.",
+    bullets: [
+      "Tu diagnóstico personalizado según tu número de propiedades y tu situación real ante el SII.",
+      "3 pasos concretos que puedes aplicar esta semana, sin contratar nada.",
+      "Tu punto de partida para sacarle el máximo provecho al webinar.",
+    ],
+    botonEmpezar: "Quiero mi diagnóstico antes del webinar",
+    ctaTitulo: "Tu siguiente paso: el webinar",
+    ctaTexto:
+      "Lleva este diagnóstico a la clase. Con tu etapa a la vista vas a saber qué parte aplica a tu caso y qué hacer primero.",
+    ctaBoton: "Ir al webinar",
+    ctaSinEnlace:
+      "Te enviaremos el enlace del webinar a tu correo y a tu WhatsApp.",
+  },
+
   whatsapp: {
     boton: "Prefiero consultar por WhatsApp",
     nota: "Te respondemos con tu diagnóstico a la vista.",

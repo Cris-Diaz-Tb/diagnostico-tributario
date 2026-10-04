@@ -2,7 +2,9 @@ import { redirect } from "next/navigation";
 import type { Viewport } from "next";
 import { esAdmin } from "@/lib/admin-auth";
 import { getSupabase } from "@/lib/supabase";
-import { DIAGNOSTICOS_DEMO } from "@/lib/demo-data";
+import { diagnosticosDemo } from "@/lib/demo-data";
+import { espacioActivo } from "@/lib/espacio-admin";
+import type { OrigenId } from "@/content/origenes";
 import { RUTAS } from "@/content/preguntas";
 import { PROMPT_SUGERIDO, SEGMENTOS_IA, TEXTO_SEGMENTO, type SegmentoIA } from "@/lib/exportacion-ia";
 import { Contador, Marco } from "../ui";
@@ -14,13 +16,13 @@ export const dynamic = "force-dynamic";
 const CLASE_CAMPO =
   "mt-2 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white focus:border-[var(--brand-accent)]/60 focus:outline-none focus:ring-2 focus:ring-[var(--brand-accent)]/25 transition";
 
-async function contarSegmentos(): Promise<Record<SegmentoIA, number>> {
+async function contarSegmentos(espacio: OrigenId): Promise<Record<SegmentoIA, number>> {
   const supabase = getSupabase();
   const conteo = { capturado: 0, abandono_gate: 0 };
 
   if (!supabase) {
     for (const s of SEGMENTOS_IA) {
-      conteo[s] = DIAGNOSTICOS_DEMO.filter((d) => d.estado_efectivo === s).length;
+      conteo[s] = diagnosticosDemo(espacio).filter((d) => d.estado_efectivo === s).length;
     }
     return conteo;
   }
@@ -31,6 +33,7 @@ async function contarSegmentos(): Promise<Record<SegmentoIA, number>> {
         .from("diagnosticos_embudo")
         .select("id", { count: "exact", head: true })
         .eq("estado_efectivo", s)
+        .eq("origen", espacio)
         .eq("es_prueba", false);
       conteo[s] = count ?? 0;
     })
@@ -41,7 +44,7 @@ async function contarSegmentos(): Promise<Record<SegmentoIA, number>> {
 export default async function PaginaExportarIa() {
   if (!(await esAdmin())) redirect("/admin/login");
 
-  const conteo = await contarSegmentos();
+  const conteo = await contarSegmentos(await espacioActivo());
 
   return (
     <Marco usandoDemo={!getSupabase()} activa="/admin/exportar-ia">

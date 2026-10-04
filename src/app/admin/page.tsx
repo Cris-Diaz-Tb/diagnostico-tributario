@@ -3,7 +3,7 @@ import type { Viewport } from "next";
 import { esAdmin } from "@/lib/admin-auth";
 import { getSupabase } from "@/lib/supabase";
 import {
-  DIAGNOSTICOS_DEMO,
+  diagnosticosDemo,
   embudoDemo,
   resumenDemo,
   type EstadoEfectivo,
@@ -30,6 +30,7 @@ import {
 } from "@/content/preguntas";
 import { OFERTAS } from "@/content/ofertas";
 import { digitosDeTelefono } from "@/lib/telefono";
+import { espacioActivo } from "@/lib/espacio-admin";
 
 export const metadata = { title: "Panel | Cris. Tributario" };
 export const viewport: Viewport = { themeColor: "#0A0F16" };
@@ -140,6 +141,7 @@ export default async function PanelAdmin({
     ? (params.estado as EstadoEfectivo)
     : null;
 
+  const espacio = await espacioActivo();
   const supabase = getSupabase();
   const usandoDemo = !supabase;
 
@@ -151,8 +153,8 @@ export default async function PanelAdmin({
   if (supabase) {
     // Agregados siempre desde las vistas SQL — nunca sumando filas aquí.
     const [{ data: resumenCrudo }, { data: embudoCrudo }] = await Promise.all([
-      supabase.from("resumen_fases").select("*"),
-      supabase.from("resumen_embudo").select("*"),
+      supabase.from("resumen_fases").select("*").eq("origen", espacio),
+      supabase.from("resumen_embudo").select("*").eq("origen", espacio),
     ]);
     resumen = (resumenCrudo ?? []) as FilaResumen[];
     embudo = (embudoCrudo ?? []) as FilaEmbudo[];
@@ -160,6 +162,7 @@ export default async function PanelAdmin({
     let consulta = supabase
       .from("diagnosticos_embudo")
       .select(COLUMNAS_TABLA, { count: "exact" })
+      .eq("origen", espacio)
       .order("fecha_creacion", { ascending: false })
       .range((pagina - 1) * POR_PAGINA, pagina * POR_PAGINA - 1);
 
@@ -171,9 +174,10 @@ export default async function PanelAdmin({
     filas = (filasCrudas ?? []) as FilaDiagnostico[];
     totalFiltrado = count ?? 0;
   } else {
-    resumen = resumenDemo();
-    embudo = embudoDemo();
-    const todas = DIAGNOSTICOS_DEMO.filter(
+    const delEspacio = diagnosticosDemo(espacio);
+    resumen = resumenDemo(delEspacio);
+    embudo = embudoDemo(delEspacio);
+    const todas = delEspacio.filter(
       (d) =>
         (!filtroRuta || d.ruta === filtroRuta) &&
         (!filtroFase || d.fase === filtroFase) &&

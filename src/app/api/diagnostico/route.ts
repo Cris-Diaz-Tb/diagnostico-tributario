@@ -3,12 +3,15 @@ import { z } from "zod";
 import { calcularResultado, RespuestasInvalidasError } from "@/lib/scoring";
 import { preguntasDeRuta, rangoDePropiedades, VERSION_CUESTIONARIO } from "@/content/preguntas";
 import { ofertaRecomendada } from "@/content/ofertas";
+import { origenValido } from "@/content/origenes";
 import { generarToken } from "@/lib/token";
 import { getSupabase } from "@/lib/supabase";
 import { enviarEventoCapi } from "@/lib/meta-capi";
 import { ipDePeticion, permitirPeticion } from "@/lib/ratelimit";
 
 const bodySchema = z.object({
+  /** Espacio de datos; solo se usa si la fila se crea aquí. */
+  origen: z.string().max(40).nullish(),
   ruta: z.enum(["A", "B", "C"]),
   propiedadesRango: z.string().max(20).nullish(),
   // Claves y valores acotados (los ids reales miden <15 chars) y máximo
@@ -45,7 +48,7 @@ const bodySchema = z.object({
 });
 
 /** Columnas que necesita la API de Conversiones para armar el evento. */
-const COLUMNAS_CAPI = "id, fbp, fbc, client_ip, user_agent";
+const COLUMNAS_CAPI = "id, origen, fbp, fbc, client_ip, user_agent";
 
 /**
  * Se llama al COMPLETAR el quiz (antes de capturar el email).
@@ -124,6 +127,7 @@ export async function POST(request: Request) {
 
   let fila: {
     id: string;
+    origen: string;
     fbp: string | null;
     fbc: string | null;
     client_ip: string | null;
@@ -153,6 +157,8 @@ export async function POST(request: Request) {
       .from("diagnosticos")
       .insert({
         token_resultado: generarToken(),
+        // El origen nunca se cambia al completar: lo fija quien crea la fila.
+        origen: origenValido(body.origen),
         ruta: resultado.ruta,
         iniciado_at: ahora,
         evento_id: body.idBase,
@@ -188,6 +194,7 @@ export async function POST(request: Request) {
       userAgent: fila.user_agent ?? request.headers.get("user-agent"),
     },
     propiedades: {
+      origen: fila.origen,
       ruta: resultado.ruta,
       propiedades_rango: propiedadesRango,
       fase: resultado.fase,

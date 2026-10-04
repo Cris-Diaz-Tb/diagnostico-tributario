@@ -6,6 +6,7 @@ import { COPY } from "@/content/copy";
 import { ofertaDeRoadmap } from "@/content/ofertas";
 import { urlAsesoria } from "@/lib/agenda";
 import { urlWhatsapp } from "@/lib/whatsapp";
+import { urlWebinarLanzamiento } from "@/lib/webinar-lanzamiento";
 import type { FaseId, Ruta } from "@/content/tipos";
 
 /**
@@ -37,6 +38,8 @@ interface EnvioDiagnostico {
   tag?: string | null;
   /** Id del diagnóstico: viaja al enlace de asesoría. */
   identificador?: string | null;
+  /** Diagnóstico de un lanzamiento: el CTA invita al webinar. */
+  esLanzamiento?: boolean;
 }
 
 export async function enviarRoadmapPorEmail({
@@ -46,6 +49,7 @@ export async function enviarRoadmapPorEmail({
   token,
   tag = null,
   identificador = null,
+  esLanzamiento = false,
 }: EnvioDiagnostico): Promise<{ enviado: boolean }> {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.EMAIL_FROM;
@@ -61,9 +65,10 @@ export async function enviarRoadmapPorEmail({
   const ruta = fase[0] as Ruta;
   const urlResultado = `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/resultado/${token}`;
   const saludo = nombre ? `Hola ${escaparHtml(nombre)},` : "Hola,";
-  const [enlaceAgenda, enlaceWhatsapp] = await Promise.all([
+  const [enlaceAgenda, enlaceWhatsapp, enlaceWebinar] = await Promise.all([
     urlAsesoria(identificador ?? token, fase),
     urlWhatsapp(identificador ?? token, fase),
+    esLanzamiento ? urlWebinarLanzamiento() : null,
   ]);
   const enlaceAsesoria = enlaceAgenda ?? COPY.marca.instagramUrl;
   const botonAsesoria = enlaceAgenda
@@ -71,6 +76,69 @@ export async function enviarRoadmapPorEmail({
     : COPY.resultado.ctaSinEnlace;
   const fuente = "font-family: Helvetica, Arial, sans-serif;";
   const esArquitectura = ofertaDeRoadmap(roadmap, tag).id === "asesoria_patrimonial";
+
+  const ctaDirecto = `
+          <tr>
+            <td align="center" style="background-color:${COLOR.tarjeta}; border:1px solid ${COLOR.borde}; border-radius:16px; padding:28px;">
+              <p style="margin:0 0 6px 0; ${fuente} font-size:16px; font-weight:700; color:#ffffff;">
+                ${COPY.resultado.ctaTitulo}
+              </p>
+              <p style="margin:0 0 ${esArquitectura ? "10px" : "20px"} 0; ${fuente} font-size:13px; line-height:1.6; color:${COLOR.textoMuted};">
+                ${ctaEfectivo(roadmap, tag)}
+              </p>
+              ${
+                esArquitectura
+                  ? `<p style="margin:0 0 14px 0; ${fuente} font-size:13px; line-height:1.6; color:${COLOR.textoMuted};">${COPY.resultado.ctaEntregable}</p>
+              <p style="margin:0 0 20px 0; ${fuente} font-size:13px; font-weight:700; line-height:1.6; color:${COLOR.texto};">${COPY.resultado.ctaRespaldo}</p>`
+                  : ""
+              }
+              <table role="presentation" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="background-color:${COLOR.acento}; border-radius:10px;">
+                    <a href="${escaparHtml(enlaceAsesoria)}" style="display:inline-block; padding:13px 24px; ${fuente} font-size:13px; font-weight:700; color:#0a0f16; text-decoration:none;">
+                      ${botonAsesoria}
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              ${
+                enlaceAgenda
+                  ? `<p style="margin:14px 0 0 0; ${fuente} font-size:12px; line-height:1.6; color:${COLOR.textoMuted};">${COPY.resultado.ctaNota}</p>`
+                  : ""
+              }
+              ${
+                enlaceWhatsapp
+                  ? `<p style="margin:18px 0 0 0; ${fuente} font-size:13px; line-height:1.6;"><a href="${escaparHtml(enlaceWhatsapp)}" style="color:${COLOR.acentoClaro}; text-decoration:underline;">${COPY.whatsapp.boton}</a></p>`
+                  : ""
+              }
+            </td>
+          </tr>`;
+
+  // Lanzamiento: el siguiente paso es el webinar, no la asesoría.
+  const ctaLanzamiento = `
+          <tr>
+            <td align="center" style="background-color:${COLOR.tarjeta}; border:1px solid ${COLOR.borde}; border-radius:16px; padding:28px;">
+              <p style="margin:0 0 6px 0; ${fuente} font-size:16px; font-weight:700; color:#ffffff;">
+                ${COPY.lanzamiento.ctaTitulo}
+              </p>
+              <p style="margin:0 0 20px 0; ${fuente} font-size:13px; line-height:1.6; color:${COLOR.textoMuted};">
+                ${COPY.lanzamiento.ctaTexto}
+              </p>
+              ${
+                enlaceWebinar
+                  ? `<table role="presentation" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="background-color:${COLOR.acento}; border-radius:10px;">
+                    <a href="${escaparHtml(enlaceWebinar)}" style="display:inline-block; padding:13px 24px; ${fuente} font-size:13px; font-weight:700; color:#0a0f16; text-decoration:none;">
+                      ${COPY.lanzamiento.ctaBoton}
+                    </a>
+                  </td>
+                </tr>
+              </table>`
+                  : `<p style="margin:0; ${fuente} font-size:13px; line-height:1.6; color:${COLOR.textoMuted};">${COPY.lanzamiento.ctaSinEnlace}</p>`
+              }
+            </td>
+          </tr>`;
 
   const filasPasos = roadmap.parteB.pasos
     .map(
@@ -156,41 +224,7 @@ export async function enviarRoadmapPorEmail({
             </td>
           </tr>
 
-          <tr>
-            <td align="center" style="background-color:${COLOR.tarjeta}; border:1px solid ${COLOR.borde}; border-radius:16px; padding:28px;">
-              <p style="margin:0 0 6px 0; ${fuente} font-size:16px; font-weight:700; color:#ffffff;">
-                ${COPY.resultado.ctaTitulo}
-              </p>
-              <p style="margin:0 0 ${esArquitectura ? "10px" : "20px"} 0; ${fuente} font-size:13px; line-height:1.6; color:${COLOR.textoMuted};">
-                ${ctaEfectivo(roadmap, tag)}
-              </p>
-              ${
-                esArquitectura
-                  ? `<p style="margin:0 0 14px 0; ${fuente} font-size:13px; line-height:1.6; color:${COLOR.textoMuted};">${COPY.resultado.ctaEntregable}</p>
-              <p style="margin:0 0 20px 0; ${fuente} font-size:13px; font-weight:700; line-height:1.6; color:${COLOR.texto};">${COPY.resultado.ctaRespaldo}</p>`
-                  : ""
-              }
-              <table role="presentation" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td style="background-color:${COLOR.acento}; border-radius:10px;">
-                    <a href="${escaparHtml(enlaceAsesoria)}" style="display:inline-block; padding:13px 24px; ${fuente} font-size:13px; font-weight:700; color:#0a0f16; text-decoration:none;">
-                      ${botonAsesoria}
-                    </a>
-                  </td>
-                </tr>
-              </table>
-              ${
-                enlaceAgenda
-                  ? `<p style="margin:14px 0 0 0; ${fuente} font-size:12px; line-height:1.6; color:${COLOR.textoMuted};">${COPY.resultado.ctaNota}</p>`
-                  : ""
-              }
-              ${
-                enlaceWhatsapp
-                  ? `<p style="margin:18px 0 0 0; ${fuente} font-size:13px; line-height:1.6;"><a href="${escaparHtml(enlaceWhatsapp)}" style="color:${COLOR.acentoClaro}; text-decoration:underline;">${COPY.whatsapp.boton}</a></p>`
-                  : ""
-              }
-            </td>
-          </tr>
+          ${esLanzamiento ? ctaLanzamiento : ctaDirecto}
 
           <tr>
             <td align="center" style="padding:28px 0 0 0; ${fuente} font-size:12px; line-height:1.6; color:${COLOR.textoMuted}; white-space:pre-line;">

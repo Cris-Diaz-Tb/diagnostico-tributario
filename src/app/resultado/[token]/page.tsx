@@ -6,6 +6,8 @@ import { NOMBRE_RUTA } from "@/content/preguntas";
 import { COPY } from "@/content/copy";
 import { ofertaDeRoadmap } from "@/content/ofertas";
 import { urlWebinarActiva } from "@/content/webinar";
+import { datosDeOrigen } from "@/content/origenes";
+import { urlWebinarLanzamiento } from "@/lib/webinar-lanzamiento";
 import { urlAsesoria } from "@/lib/agenda";
 import { urlWhatsapp } from "@/lib/whatsapp";
 import type { FaseId, Ruta } from "@/content/tipos";
@@ -26,6 +28,8 @@ interface DatosResultado {
   tag: string | null;
   /** Identificador que viaja al enlace de asesoría para cruzar venta y respuestas. */
   identificador: string;
+  /** Diagnóstico de un lanzamiento: el siguiente paso es el webinar. */
+  esLanzamiento: boolean;
 }
 
 async function datosDeToken(token: string): Promise<DatosResultado | null> {
@@ -36,14 +40,16 @@ async function datosDeToken(token: string): Promise<DatosResultado | null> {
   if (token.startsWith("demo-")) {
     if (supabase) return null;
     const fase = token.split("-")[1] as FaseId;
-    return FASES.includes(fase) ? { fase, tag: null, identificador: token } : null;
+    return FASES.includes(fase)
+      ? { fase, tag: null, identificador: token, esLanzamiento: false }
+      : null;
   }
 
   if (!supabase) return null;
 
   const { data } = await supabase
     .from("diagnosticos")
-    .select("id, fase, problema_principal")
+    .select("id, fase, problema_principal, origen")
     .eq("token_resultado", token)
     .maybeSingle();
 
@@ -52,6 +58,7 @@ async function datosDeToken(token: string): Promise<DatosResultado | null> {
     fase: data.fase as FaseId,
     tag: data.problema_principal as string | null,
     identificador: data.id as string,
+    esLanzamiento: Boolean(datosDeOrigen(data.origen).esLanzamiento),
   };
 }
 
@@ -63,16 +70,17 @@ export default async function PaginaResultado({
   const { token } = await params;
   const datos = await datosDeToken(token);
   if (!datos) notFound();
-  const { fase, tag, identificador } = datos;
+  const { fase, tag, identificador, esLanzamiento } = datos;
 
   const roadmap = ROADMAPS[fase];
   const ruta = fase[0] as Ruta;
   const esDemo = token.startsWith("demo-");
   const esArquitectura = ofertaDeRoadmap(roadmap, tag).id === "asesoria_patrimonial";
   const enlaceWebinar = urlWebinarActiva();
-  const [enlaceAsesoria, enlaceWhatsapp] = await Promise.all([
+  const [enlaceAsesoria, enlaceWhatsapp, enlaceWebinarLanzamiento] = await Promise.all([
     urlAsesoria(identificador, fase),
     urlWhatsapp(identificador, fase),
+    esLanzamiento ? urlWebinarLanzamiento() : null,
   ]);
 
   return (
@@ -132,76 +140,105 @@ export default async function PaginaResultado({
           )}
         </div>
 
-        <div
-          className="brand-glass brand-pop-in rounded-3xl p-6 sm:p-8 text-center mt-6"
-          style={{ animationDelay: "0.4s" }}
-        >
-          <h2 className="font-display text-2xl font-medium text-white">
-            {COPY.resultado.ctaTitulo}
-          </h2>
-          <p className="mt-3 text-sm sm:text-base text-white/75 leading-relaxed max-w-md mx-auto">
-            {ctaEfectivo(roadmap, tag)}
-          </p>
-          {esArquitectura && (
-            <>
-              <p className="mt-3 text-sm sm:text-base text-white/75 leading-relaxed max-w-md mx-auto">
-                {COPY.resultado.ctaEntregable}
-              </p>
-              <p className="mt-5 text-sm font-semibold text-white/90 leading-relaxed max-w-md mx-auto text-balance">
-                {COPY.resultado.ctaRespaldo}
-              </p>
-            </>
-          )}
-          {enlaceAsesoria ? (
-            <BotonAccion
-              href={enlaceAsesoria}
-              accion="clic_agendar"
-              token={token}
-              fase={fase}
-              className="brand-btn-cta mt-6 inline-block w-full sm:w-auto rounded-2xl px-8 py-4 font-semibold"
-            >
-              {COPY.resultado.ctaBoton}
-            </BotonAccion>
-          ) : (
-            <a
-              href={COPY.marca.instagramUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="brand-btn-cta mt-6 inline-block w-full sm:w-auto rounded-2xl px-8 py-4 font-semibold"
-            >
-              {COPY.resultado.ctaSinEnlace}
-            </a>
-          )}
-          {enlaceAsesoria && (
-            <p className="mt-4 text-xs text-white/50 leading-relaxed">
-              {COPY.resultado.ctaNota}
+        {esLanzamiento ? (
+          <div
+            className="brand-glass brand-pop-in rounded-3xl p-6 sm:p-8 text-center mt-6"
+            style={{ animationDelay: "0.4s" }}
+          >
+            <h2 className="font-display text-2xl font-medium text-white">
+              {COPY.lanzamiento.ctaTitulo}
+            </h2>
+            <p className="mt-3 text-sm sm:text-base text-white/75 leading-relaxed max-w-md mx-auto">
+              {COPY.lanzamiento.ctaTexto}
             </p>
-          )}
-          {enlaceWhatsapp && (
-            <div className="mt-6 border-t border-white/10 pt-5">
-              <BotonWhatsapp
-                href={enlaceWhatsapp}
+            {enlaceWebinarLanzamiento ? (
+              <BotonAccion
+                href={enlaceWebinarLanzamiento}
+                accion="clic_webinar"
                 token={token}
                 fase={fase}
-                texto={COPY.whatsapp.boton}
-              />
-              <p className="mt-3 text-xs text-white/50 leading-relaxed">
-                {COPY.whatsapp.nota}
+                className="brand-btn-cta mt-6 inline-block w-full sm:w-auto rounded-2xl px-8 py-4 font-semibold"
+              >
+                {COPY.lanzamiento.ctaBoton}
+              </BotonAccion>
+            ) : (
+              <p className="mt-5 text-sm text-white/60 leading-relaxed max-w-md mx-auto">
+                {COPY.lanzamiento.ctaSinEnlace}
               </p>
-            </div>
-          )}
-          {enlaceWebinar && (
-            <BotonAccion
-              href={enlaceWebinar}
-              accion="clic_webinar"
-              token={token}
-              fase={fase}
-              className="mt-5 inline-block text-sm text-white/60 underline underline-offset-4 decoration-white/25 hover:text-white hover:decoration-[var(--brand-accent)] transition"
-            >
-              {COPY.webinar.boton}
-            </BotonAccion>
-          )}
-        </div>
+            )}
+          </div>
+        ) : (
+          <div
+            className="brand-glass brand-pop-in rounded-3xl p-6 sm:p-8 text-center mt-6"
+            style={{ animationDelay: "0.4s" }}
+          >
+            <h2 className="font-display text-2xl font-medium text-white">
+              {COPY.resultado.ctaTitulo}
+            </h2>
+            <p className="mt-3 text-sm sm:text-base text-white/75 leading-relaxed max-w-md mx-auto">
+              {ctaEfectivo(roadmap, tag)}
+            </p>
+            {esArquitectura && (
+              <>
+                <p className="mt-3 text-sm sm:text-base text-white/75 leading-relaxed max-w-md mx-auto">
+                  {COPY.resultado.ctaEntregable}
+                </p>
+                <p className="mt-5 text-sm font-semibold text-white/90 leading-relaxed max-w-md mx-auto text-balance">
+                  {COPY.resultado.ctaRespaldo}
+                </p>
+              </>
+            )}
+            {enlaceAsesoria ? (
+              <BotonAccion
+                href={enlaceAsesoria}
+                accion="clic_agendar"
+                token={token}
+                fase={fase}
+                className="brand-btn-cta mt-6 inline-block w-full sm:w-auto rounded-2xl px-8 py-4 font-semibold"
+              >
+                {COPY.resultado.ctaBoton}
+              </BotonAccion>
+            ) : (
+              <a
+                href={COPY.marca.instagramUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="brand-btn-cta mt-6 inline-block w-full sm:w-auto rounded-2xl px-8 py-4 font-semibold"
+              >
+                {COPY.resultado.ctaSinEnlace}
+              </a>
+            )}
+            {enlaceAsesoria && (
+              <p className="mt-4 text-xs text-white/50 leading-relaxed">
+                {COPY.resultado.ctaNota}
+              </p>
+            )}
+            {enlaceWhatsapp && (
+              <div className="mt-6 border-t border-white/10 pt-5">
+                <BotonWhatsapp
+                  href={enlaceWhatsapp}
+                  token={token}
+                  fase={fase}
+                  texto={COPY.whatsapp.boton}
+                />
+                <p className="mt-3 text-xs text-white/50 leading-relaxed">
+                  {COPY.whatsapp.nota}
+                </p>
+              </div>
+            )}
+            {enlaceWebinar && (
+              <BotonAccion
+                href={enlaceWebinar}
+                accion="clic_webinar"
+                token={token}
+                fase={fase}
+                className="mt-5 inline-block text-sm text-white/60 underline underline-offset-4 decoration-white/25 hover:text-white hover:decoration-[var(--brand-accent)] transition"
+              >
+                {COPY.webinar.boton}
+              </BotonAccion>
+            )}
+          </div>
+        )}
 
         <p className="mt-8 text-center text-xs text-white/40 leading-relaxed">
           {COPY.avisoLegal}

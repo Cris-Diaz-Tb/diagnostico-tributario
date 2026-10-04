@@ -11,6 +11,8 @@ import {
 import { getSupabase } from "@/lib/supabase";
 import { permitirIntentoLogin } from "@/lib/ratelimit";
 import { COOKIE_PRUEBA } from "@/lib/prueba";
+import { COOKIE_ESPACIO } from "@/lib/espacio-admin";
+import { origenValido } from "@/content/origenes";
 
 export async function loginAdmin(formData: FormData): Promise<void> {
   const encabezados = await headers();
@@ -58,5 +60,19 @@ export async function marcarPrueba(formData: FormData): Promise<void> {
       .eq("id", id);
     if (error) console.error("[admin] Error marcando prueba:", error);
   }
+  redirect(volver.startsWith("/admin") ? volver : "/admin");
+}
+
+/** Cambia el espacio de datos que muestra el panel. */
+export async function cambiarEspacio(formData: FormData): Promise<void> {
+  if (!(await esAdmin())) redirect("/admin/login");
+
+  const espacio = origenValido(formData.get("espacio"));
+  const volver = String(formData.get("volver") ?? "/admin");
+  (await cookies()).set(COOKIE_ESPACIO, espacio, {
+    path: "/admin",
+    sameSite: "lax",
+    maxAge: 60 * 60 * 24 * 365,
+  });
   redirect(volver.startsWith("/admin") ? volver : "/admin");
 }
