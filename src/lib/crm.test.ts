@@ -31,6 +31,13 @@ describe("etiquetas de GoHighLevel", () => {
     ]);
   });
 
+  it("marcan el rango de propiedades y si es avatar", () => {
+    const etiquetas = etiquetasDeLead({ ...LEAD, propiedadesRango: "5_10", avatar: true });
+    expect(etiquetas).toContain("diag-propiedades-5_10");
+    expect(etiquetas).toContain("diag-avatar-si");
+    expect(etiquetasDeLead({ ...LEAD, avatar: false })).toContain("diag-avatar-no");
+  });
+
   it("omite las etiquetas de clasificación que no existen", () => {
     const etiquetas = etiquetasDeLead({ ...LEAD, problema: null, nivelIntencion: null });
     expect(etiquetas).toHaveLength(4);

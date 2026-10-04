@@ -30,16 +30,26 @@ describe("exportación para IA", () => {
     expect(registro.oferta_recomendada).not.toMatch(/_/);
   });
 
-  it("incluye cuántas propiedades tiene y la pregunta que define la ruta", () => {
-    const registro = registroParaIA({ ...gate, ruta: "B" }, false);
-    expect(registro.propiedades).toBe("Entre 6 y 15 propiedades");
+  it("incluye el rango de propiedades, la pregunta que define la ruta y si es avatar", () => {
+    const fila = { ...gate, ruta: "B" as const, propiedades_rango: "5_10" };
+    const registro = registroParaIA(fila, false);
+    expect(registro.propiedades).toBe("Entre 5 y 10 propiedades");
+    expect(registro.avatar).toBe("Sí");
     expect(registro.respuestas[0]).toEqual({
       pregunta: "¿Cuántas propiedades tienes hoy?",
-      respuesta: "Entre 6 y 15 propiedades",
+      respuesta: "Entre 5 y 10 propiedades",
     });
-    expect(exportarMarkdown([{ ...gate, ruta: "B" }], false)).toContain(
-      "**Propiedades:** Entre 6 y 15 propiedades"
-    );
+    const md = exportarMarkdown([fila], false);
+    expect(md).toContain("**Propiedades:** Entre 5 y 10 propiedades");
+    expect(md).toContain("Avatar (5 propiedades o más): 1");
+  });
+
+  it("los diagnósticos sin rango muestran la opción anterior", () => {
+    const viejoA = registroParaIA({ ...gate, ruta: "A", propiedades_rango: null }, false);
+    expect(viejoA.propiedades).toBe("Hasta 5 propiedades");
+    expect(viejoA.avatar).toMatch(/Sin dato/);
+    const viejoB = registroParaIA({ ...gate, ruta: "B", propiedades_rango: null }, false);
+    expect(viejoB.avatar).toBe("Sí");
   });
 
   it("marca las pruebas internas", () => {

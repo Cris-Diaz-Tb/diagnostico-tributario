@@ -11,7 +11,7 @@ import type { FaseId, OfertaId, Ruta } from "@/content/tipos";
  *
  * Etiquetas: diagnostico · diag-ruta-a · diag-fase-a2 ·
  * diag-oferta-asesoria_patrimonial · diag-problema-herencia ·
- * diag-intencion-nada
+ * diag-intencion-nada · diag-propiedades-5_10 · diag-avatar-si
  *
  * Campos personalizados: opcionales. Si se definen los ids en las
  * variables GHL_CAMPO_* (contacto) y GHL_CAMPO_OPP_* (oportunidad),
@@ -34,6 +34,10 @@ export interface LeadParaCrm {
   score: number;
   problema: string | null;
   nivelIntencion: string | null;
+  /** Rango de la bifurcación; null en diagnósticos anteriores al rango. */
+  propiedadesRango?: string | null;
+  /** 5 propiedades o más. null cuando no se puede saber. */
+  avatar?: boolean | null;
   oferta: OfertaId;
   urlResultado: string;
   /** Datos legibles para los campos personalizados y el bot. */
@@ -65,6 +69,8 @@ export function etiquetasDeLead(lead: LeadParaCrm): string[] {
     `diag-oferta-${lead.oferta}`,
     lead.problema ? `diag-problema-${lead.problema}` : null,
     lead.nivelIntencion ? `diag-intencion-${lead.nivelIntencion}` : null,
+    lead.propiedadesRango ? `diag-propiedades-${lead.propiedadesRango}` : null,
+    lead.avatar === true ? "diag-avatar-si" : lead.avatar === false ? "diag-avatar-no" : null,
   ].filter((e): e is string => Boolean(e));
 }
 

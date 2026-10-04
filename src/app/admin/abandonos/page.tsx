@@ -7,7 +7,7 @@ import {
   abandonoPorPreguntaDemo,
   type EstadoEfectivo,
 } from "@/lib/demo-data";
-import { preguntasDeRuta, respuestaBifurcacion, RUTAS } from "@/content/preguntas";
+import { esAvatar, preguntasDeRuta, respuestaBifurcacion, RUTAS } from "@/content/preguntas";
 import { faseEstimadaDeDetalle, type RespuestaDetallada } from "@/lib/scoring";
 import { Barra, BotonPrueba, COLOR_FASE, Contador, Filtro, Marco, fechaCorta, porcentaje } from "../ui";
 import type { FaseId, Ruta } from "@/content/tipos";
@@ -50,6 +50,7 @@ interface FilaAbandono {
   utm_content: string | null;
   utm_term?: string | null;
   es_prueba?: boolean;
+  propiedades_rango?: string | null;
 }
 
 export default async function PanelAbandonos({
@@ -81,7 +82,7 @@ export default async function PanelAbandonos({
     let consulta = supabase
       .from("diagnosticos_embudo")
       .select(
-        "id, nombre, email, fecha_creacion, ultima_actividad_at, ruta, estado_efectivo, preguntas_respondidas, total_preguntas, ultima_pregunta_id, respuestas, fase, utm_source, utm_campaign, utm_content, utm_term, es_prueba",
+        "id, nombre, email, fecha_creacion, ultima_actividad_at, ruta, estado_efectivo, preguntas_respondidas, total_preguntas, ultima_pregunta_id, respuestas, fase, utm_source, utm_campaign, utm_content, utm_term, es_prueba, propiedades_rango",
         { count: "exact" }
       )
       .in("estado_efectivo", estados)
@@ -265,6 +266,11 @@ export default async function PanelAbandonos({
                     {fila.email && <span className="text-white/40"> · {fila.email}</span>}
                   </span>
                 )}
+                {esAvatar(fila.ruta, fila.propiedades_rango) === true && (
+                  <span className="rounded-full border border-emerald-400/25 bg-emerald-400/10 px-2 py-0.5 text-[11px] font-medium text-emerald-300">
+                    Avatar
+                  </span>
+                )}
                 {fila.es_prueba && (
                   <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-2 py-0.5 text-[11px] font-medium text-amber-300">
                     Prueba
@@ -288,7 +294,9 @@ export default async function PanelAbandonos({
                 {/* La ruta es la respuesta a cuántas propiedades tiene */}
                 <div className="text-xs">
                   <p className="text-white/45">{respuestaBifurcacion(fila.ruta).pregunta}</p>
-                  <p className="text-white/85">{respuestaBifurcacion(fila.ruta).respuesta}</p>
+                  <p className="text-white/85">
+                    {respuestaBifurcacion(fila.ruta, fila.propiedades_rango).respuesta}
+                  </p>
                 </div>
                 {detalle.length === 0 && (
                   <p className="text-xs text-white/35">Sin respuestas guardadas.</p>

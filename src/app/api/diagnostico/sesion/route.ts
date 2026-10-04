@@ -7,6 +7,7 @@ import { getSupabase } from "@/lib/supabase";
 import { enviarEventoCapi } from "@/lib/meta-capi";
 import { ipDePeticion, permitirSesion } from "@/lib/ratelimit";
 import { COOKIE_PRUEBA } from "@/lib/prueba";
+import { rangoDePropiedades } from "@/content/preguntas";
 
 /**
  * Guardado progresivo del diagnóstico.
@@ -51,6 +52,8 @@ const bodySchema = z.object({
   /** Ausente en la primera llamada: ahí es cuando se crea la fila. */
   sesionId: z.string().max(100).nullish(),
   ruta: z.enum(["A", "B", "C"]),
+  /** Rango de propiedades de la bifurcación; solo viaja al crear la fila. */
+  propiedadesRango: z.string().max(20).nullish(),
   respuestas: z
     .record(z.string().max(30), z.string().max(60))
     .refine((r) => Object.keys(r).length <= 14, "demasiadas respuestas"),
@@ -119,12 +122,16 @@ export async function POST(request: Request) {
 
   // ---- Primera respuesta: nace la fila ----------------------------
   const atrib = body.atribucion;
+  // Solo se guarda un rango que exista y que corresponda a la ruta.
+  const rango = rangoDePropiedades(body.propiedadesRango);
+  const propiedadesRango = rango?.ruta === body.ruta ? rango.id : null;
   const { data, error } = await supabase
     .from("diagnosticos")
     .insert({
       token_resultado: generarToken(),
       estado: "iniciado",
       ruta: body.ruta,
+      propiedades_rango: propiedadesRango,
       respuestas: parcial.detalle,
       preguntas_respondidas: parcial.preguntasRespondidas,
       total_preguntas: parcial.totalPreguntas,
@@ -171,6 +178,7 @@ export async function POST(request: Request) {
     },
     propiedades: {
       ruta: body.ruta,
+      propiedades_rango: propiedadesRango,
       utm_source: atrib?.utm?.source,
       utm_campaign: atrib?.utm?.campaign,
       utm_content: atrib?.utm?.content,

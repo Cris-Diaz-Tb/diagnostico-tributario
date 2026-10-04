@@ -124,6 +124,7 @@ export async function POST(request: Request) {
       },
       propiedades: {
         ruta: data.ruta as string,
+        propiedades_rango: data.propiedades_rango,
         fase: data.fase as string,
         score: data.score_numerico as number,
         problema_principal: data.problema_principal as string | null,

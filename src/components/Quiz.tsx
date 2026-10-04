@@ -7,6 +7,7 @@ import {
   NOMBRE_RUTA,
   PREGUNTA_BIFURCACION,
   preguntasDeRuta,
+  type RangoPropiedades,
 } from "@/content/preguntas";
 import { etapaDeFase, ROADMAPS } from "@/content/roadmaps";
 import { COPY } from "@/content/copy";
@@ -54,6 +55,8 @@ export function Quiz() {
   const router = useRouter();
   const [etapa, setEtapa] = useState<Etapa>("bifurcacion");
   const [ruta, setRuta] = useState<Ruta | null>(null);
+  /** Rango de propiedades elegido en la bifurcación (más fino que la ruta). */
+  const [rango, setRango] = useState<RangoPropiedades | null>(null);
   const [indice, setIndice] = useState(0);
   const [respuestas, setRespuestas] = useState<Record<string, string>>({});
   // Texto libre: pregunta abierta de investigación y detalle de "Otra cosa".
@@ -85,10 +88,11 @@ export function Quiz() {
     return () => clearInterval(id);
   }, [etapa]);
 
-  function elegirRuta(rutaElegida: Ruta) {
-    setRuta(rutaElegida);
+  function elegirRango(opcion: { id: RangoPropiedades; ruta: Ruta }) {
+    setRango(opcion.id);
+    setRuta(opcion.ruta);
     setEtapa("preguntas");
-    trackEvento("quiz_iniciado", { ruta: rutaElegida });
+    trackEvento("quiz_iniciado", { ruta: opcion.ruta, propiedades: opcion.id });
   }
 
   /**
@@ -115,12 +119,16 @@ export function Quiz() {
     if (ruta) {
       registrarProgreso({
         ruta,
+        propiedadesRango: rango,
         respuestas: nuevasRespuestas,
         textos: nuevosTextos,
         ultimaPregunta: preguntaId,
       });
       if (esPrimera) {
-        trackPixel("DiagnosticoIniciado", idBaseDeSesion(), { ruta });
+        trackPixel("DiagnosticoIniciado", idBaseDeSesion(), {
+          ruta,
+          propiedades_rango: rango,
+        });
       }
     }
 
@@ -168,6 +176,7 @@ export function Quiz() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ruta,
+          propiedadesRango: rango,
           respuestas: todas,
           textos: todosLosTextos,
           sesionId: sesionIdGuardado(),
@@ -218,6 +227,7 @@ export function Quiz() {
       setIndice(indice - 1);
     } else {
       setRuta(null);
+      setRango(null);
       setEtapa("bifurcacion");
     }
   }
@@ -243,8 +253,8 @@ export function Quiz() {
             <div className="space-y-3">
               {PREGUNTA_BIFURCACION.opciones.map((opcion) => (
                 <BotonOpcion
-                  key={opcion.ruta}
-                  onClick={() => elegirRuta(opcion.ruta)}
+                  key={opcion.id}
+                  onClick={() => elegirRango(opcion)}
                 >
                   {opcion.texto}
                 </BotonOpcion>

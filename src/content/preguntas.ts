@@ -19,24 +19,73 @@ export const NOMBRE_RUTA: Record<Ruta, string> = {
   C: "Inversionista consolidado",
 };
 
+/**
+ * Rangos de la pregunta de entrada. Cada rango cae en una ruta, pero se
+ * guarda aparte (propiedades_rango) para tener más precisión que la ruta.
+ *
+ * El avatar de Cris es quien tiene 5 propiedades o más: por eso el 5 va a
+ * la ruta B y la ruta A queda solo para quien está por debajo.
+ */
+export type RangoPropiedades = "1_4" | "5_10" | "11_15" | "16_30" | "mas_30";
+
+export const RANGOS_PROPIEDADES: Array<{
+  id: RangoPropiedades;
+  ruta: Ruta;
+  texto: string;
+  avatar: boolean;
+}> = [
+  { id: "1_4", ruta: "A", texto: "Entre 1 y 4 propiedades", avatar: false },
+  { id: "5_10", ruta: "B", texto: "Entre 5 y 10 propiedades", avatar: true },
+  { id: "11_15", ruta: "B", texto: "Entre 11 y 15 propiedades", avatar: true },
+  { id: "16_30", ruta: "C", texto: "Entre 16 y 30 propiedades", avatar: true },
+  { id: "mas_30", ruta: "C", texto: "Más de 30 propiedades", avatar: true },
+];
+
 export const PREGUNTA_BIFURCACION = {
   texto: "¿Cuántas propiedades tienes hoy?",
   ayuda:
     "Incluye las promesas de compraventa si vas a firmar la escritura este año.",
-  opciones: [
-    { ruta: "A" as Ruta, texto: "Hasta 5 propiedades" },
-    { ruta: "B" as Ruta, texto: "Entre 6 y 15 propiedades" },
-    { ruta: "C" as Ruta, texto: "16 propiedades o más" },
-  ],
+  opciones: RANGOS_PROPIEDADES,
 };
 
+/** Opciones de la versión anterior, que solo dejaban la ruta. */
+const TEXTO_RUTA_ANTERIOR: Record<Ruta, string> = {
+  A: "Hasta 5 propiedades",
+  B: "Entre 6 y 15 propiedades",
+  C: "16 propiedades o más",
+};
+
+export function rangoDePropiedades(valor: unknown): (typeof RANGOS_PROPIEDADES)[number] | null {
+  return RANGOS_PROPIEDADES.find((r) => r.id === valor) ?? null;
+}
+
 /**
- * La bifurcación no se guarda en `respuestas`: la ruta ES la respuesta.
- * Se reconstruye para mostrarla en el panel y en las exportaciones.
+ * ¿Es avatar (5 propiedades o más)? Con rango, se sabe. Sin rango
+ * (diagnósticos anteriores), B y C sí; la ruta A antigua mezclaba 1 a 5,
+ * así que no se puede saber.
  */
-export function respuestaBifurcacion(ruta: Ruta): { pregunta: string; respuesta: string } {
-  const opcion = PREGUNTA_BIFURCACION.opciones.find((o) => o.ruta === ruta);
-  return { pregunta: PREGUNTA_BIFURCACION.texto, respuesta: opcion?.texto ?? ruta };
+export function esAvatar(ruta: Ruta, rango: string | null | undefined): boolean | null {
+  const r = rangoDePropiedades(rango);
+  if (r) return r.avatar;
+  return ruta === "A" ? null : true;
+}
+
+export const TEXTO_AVATAR = (avatar: boolean | null): string =>
+  avatar === null ? "Sin dato (ruta A anterior: 1 a 5)" : avatar ? "Sí" : "No";
+
+/**
+ * La bifurcación no se guarda en `respuestas`, sino en propiedades_rango.
+ * Se reconstruye para mostrarla en el panel y en las exportaciones; los
+ * diagnósticos anteriores al rango muestran la opción que eligieron.
+ */
+export function respuestaBifurcacion(
+  ruta: Ruta,
+  rango?: string | null
+): { pregunta: string; respuesta: string } {
+  return {
+    pregunta: PREGUNTA_BIFURCACION.texto,
+    respuesta: rangoDePropiedades(rango)?.texto ?? TEXTO_RUTA_ANTERIOR[ruta],
+  };
 }
 
 // ------------------------------------------------------------------
@@ -89,7 +138,7 @@ function preguntaAbierta(id: string): Pregunta {
   };
 }
 
-/** Ruta A (hasta 5 propiedades): 7 puntuadas (score 7-21), 2 de etiqueta, 1 abierta. */
+/** Ruta A (1 a 4 propiedades): 7 puntuadas (score 7-21), 2 de etiqueta, 1 abierta. */
 export const PREGUNTAS_A: Pregunta[] = [
   {
     id: "a1",
@@ -168,7 +217,7 @@ export const PREGUNTAS_A: Pregunta[] = [
   preguntaAbierta("a10"),
 ];
 
-/** Ruta B (6 a 15 propiedades): 7 puntuadas (score 7-21), 2 de etiqueta, 1 abierta. */
+/** Ruta B (5 a 15 propiedades): 7 puntuadas (score 7-21), 2 de etiqueta, 1 abierta. */
 export const PREGUNTAS_B: Pregunta[] = [
   {
     id: "b1",

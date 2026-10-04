@@ -54,6 +54,8 @@ let cadena: Promise<unknown> = Promise.resolve();
 
 export interface ProgresoQuiz {
   ruta: Ruta;
+  /** Rango de propiedades de la bifurcación; se guarda al crear la fila. */
+  propiedadesRango: string | null;
   respuestas: Record<string, string>;
   /** Texto libre: pregunta abierta y detalle de "Otra cosa". */
   textos: Record<string, string>;
@@ -78,6 +80,7 @@ export function registrarProgreso(progreso: ProgresoQuiz): Promise<void> {
         body: JSON.stringify({
           sesionId,
           ruta: progreso.ruta,
+          propiedadesRango: sesionId ? null : progreso.propiedadesRango,
           respuestas: progreso.respuestas,
           textos: progreso.textos,
           ultimaPregunta: progreso.ultimaPregunta,

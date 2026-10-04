@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { calcularResultado, RespuestasInvalidasError } from "@/lib/scoring";
-import { preguntasDeRuta, VERSION_CUESTIONARIO } from "@/content/preguntas";
+import { preguntasDeRuta, rangoDePropiedades, VERSION_CUESTIONARIO } from "@/content/preguntas";
 import { ofertaRecomendada } from "@/content/ofertas";
 import { generarToken } from "@/lib/token";
 import { getSupabase } from "@/lib/supabase";
@@ -10,6 +10,7 @@ import { ipDePeticion, permitirPeticion } from "@/lib/ratelimit";
 
 const bodySchema = z.object({
   ruta: z.enum(["A", "B", "C"]),
+  propiedadesRango: z.string().max(20).nullish(),
   // Claves y valores acotados (los ids reales miden <15 chars) y máximo
   // 12 entradas (la ruta más larga tiene 9 preguntas) — evita payloads
   // basura de gran tamaño.
@@ -97,7 +98,12 @@ export async function POST(request: Request) {
   const ahora = new Date().toISOString();
   const totalPreguntas = preguntasDeRuta(resultado.ruta).length;
 
+  const rango = rangoDePropiedades(body.propiedadesRango);
+  const propiedadesRango = rango?.ruta === resultado.ruta ? rango.id : null;
+
   const camposResultado = {
+    // Respaldo por si la fila nació sin el rango; nunca lo borra.
+    ...(propiedadesRango ? { propiedades_rango: propiedadesRango } : {}),
     estado: "completado",
     fase: resultado.fase,
     score_numerico: resultado.score,
@@ -183,6 +189,7 @@ export async function POST(request: Request) {
     },
     propiedades: {
       ruta: resultado.ruta,
+      propiedades_rango: propiedadesRango,
       fase: resultado.fase,
       score: resultado.score,
       problema_principal: resultado.tag,

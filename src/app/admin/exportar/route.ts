@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { esAdmin } from "@/lib/admin-auth";
 import { getSupabase } from "@/lib/supabase";
 import type { RespuestaDetallada } from "@/lib/scoring";
-import { respuestaBifurcacion } from "@/content/preguntas";
+import { TEXTO_AVATAR, esAvatar, respuestaBifurcacion } from "@/content/preguntas";
 import type { Ruta } from "@/content/tipos";
 
 /**
@@ -23,6 +23,7 @@ const COLUMNAS = [
   "email",
   "telefono",
   "propiedades",
+  "avatar",
   "ruta",
   "fase",
   "score",
@@ -59,10 +60,10 @@ function celda(valor: unknown): string {
  * Aplana el detalle de respuestas a "pregunta: opción | pregunta: opción".
  * Empieza por la bifurcación, que no se guarda como respuesta.
  */
-function resumirRespuestas(ruta: Ruta, respuestas: unknown): string {
+function resumirRespuestas(ruta: Ruta, rango: string | null, respuestas: unknown): string {
   const detalle = Array.isArray(respuestas) ? (respuestas as RespuestaDetallada[]) : [];
   return [
-    `propiedades: ${respuestaBifurcacion(ruta).respuesta}`,
+    `propiedades: ${respuestaBifurcacion(ruta, rango).respuesta}`,
     ...detalle.map((r) => `${r.preguntaId}: ${r.opcion}`),
   ].join(" | ");
 }
@@ -105,7 +106,8 @@ export async function GET(request: Request) {
       d.nombre,
       d.email,
       d.telefono,
-      respuestaBifurcacion(d.ruta).respuesta,
+      respuestaBifurcacion(d.ruta, d.propiedades_rango).respuesta,
+      TEXTO_AVATAR(esAvatar(d.ruta, d.propiedades_rango)),
       d.ruta,
       d.fase,
       d.score_numerico,
@@ -123,7 +125,7 @@ export async function GET(request: Request) {
       d.utm_content,
       d.utm_term,
       d.referrer,
-      resumirRespuestas(d.ruta, d.respuestas),
+      resumirRespuestas(d.ruta, d.propiedades_rango, d.respuestas),
     ]
       .map(celda)
       .join(",")

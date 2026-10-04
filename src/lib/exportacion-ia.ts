@@ -1,7 +1,9 @@
 import {
   NOMBRE_RUTA,
   TEXTO_INTENCION,
+  TEXTO_AVATAR,
   TEXTO_PROBLEMA,
+  esAvatar,
   respuestaBifurcacion,
 } from "@/content/preguntas";
 import { OFERTAS } from "@/content/ofertas";
@@ -32,7 +34,7 @@ export type FormatoIA = "md" | "jsonl";
 
 /** Columnas de diagnosticos_embudo que necesita la exportación. */
 export const COLUMNAS_IA =
-  "id, fecha_creacion, estado_efectivo, nombre, email, telefono, ruta, fase, score_numerico, respuestas, problema_principal, problema_otro, nivel_intencion, texto_abierto, oferta_recomendada, utm_source, utm_medium, utm_campaign, utm_content, utm_term, whatsapp_iniciado_at, es_prueba";
+  "id, fecha_creacion, estado_efectivo, nombre, email, telefono, ruta, fase, score_numerico, respuestas, problema_principal, problema_otro, nivel_intencion, texto_abierto, oferta_recomendada, utm_source, utm_medium, utm_campaign, utm_content, utm_term, whatsapp_iniciado_at, es_prueba, propiedades_rango";
 
 export interface FilaIA {
   id: string;
@@ -57,6 +59,7 @@ export interface FilaIA {
   utm_term?: string | null;
   whatsapp_iniciado_at?: string | null;
   es_prueba?: boolean;
+  propiedades_rango?: string | null;
 }
 
 export interface RegistroIA {
@@ -66,6 +69,8 @@ export interface RegistroIA {
   es_prueba: boolean;
   /** Respuesta a la pregunta que define la ruta. */
   propiedades: string;
+  /** "Sí" con 5 propiedades o más. */
+  avatar: string;
   ruta: string;
   fase: string | null;
   fase_titulo: string | null;
@@ -98,7 +103,8 @@ export function registroParaIA(fila: FilaIA, incluirContacto: boolean): Registro
     fecha: fila.fecha_creacion.slice(0, 10),
     segmento: TEXTO_SEGMENTO[fila.estado_efectivo as SegmentoIA] ?? fila.estado_efectivo,
     es_prueba: Boolean(fila.es_prueba),
-    propiedades: respuestaBifurcacion(fila.ruta).respuesta,
+    propiedades: respuestaBifurcacion(fila.ruta, fila.propiedades_rango).respuesta,
+    avatar: TEXTO_AVATAR(esAvatar(fila.ruta, fila.propiedades_rango)),
     ruta: `${fila.ruta} · ${NOMBRE_RUTA[fila.ruta]}`,
     fase: fila.fase,
     fase_titulo: fila.fase ? ROADMAPS[fila.fase].parteA.titulo : null,
@@ -125,7 +131,7 @@ export function registroParaIA(fila: FilaIA, incluirContacto: boolean): Registro
     // La bifurcación no está en `respuestas`: se antepone para que el
     // análisis vea la pregunta que define la ruta.
     respuestas: [
-      respuestaBifurcacion(fila.ruta),
+      respuestaBifurcacion(fila.ruta, fila.propiedades_rango),
       ...(fila.respuestas ?? []).map((r) => ({ pregunta: r.pregunta, respuesta: r.opcion })),
     ],
   };
@@ -170,6 +176,7 @@ function bloqueMarkdown(r: RegistroIA): string {
       r.es_prueba ? linea("Prueba interna", "sí, no es un lead real") : null,
       linea("Fecha", r.fecha),
       linea("Propiedades", r.propiedades),
+      linea("Avatar (5 o más)", r.avatar),
       linea("Ruta", r.ruta),
       linea("Fase", r.fase ? `${r.fase}, "${r.fase_titulo}"` : null),
       linea("Score", r.score),
@@ -204,6 +211,7 @@ export function exportarMarkdown(
   generado: Date = new Date()
 ): string {
   const pruebas = filas.filter((f) => f.es_prueba).length;
+  const avatar = filas.filter((f) => esAvatar(f.ruta, f.propiedades_rango) === true).length;
   const registros = filas.map((f) => registroParaIA(f, incluirContacto));
   const conteo = SEGMENTOS_IA.map(
     (s) => `- ${TEXTO_SEGMENTO[s]}: ${filas.filter((f) => f.estado_efectivo === s).length}`
@@ -215,11 +223,12 @@ export function exportarMarkdown(
     `Exportado el ${generado.toISOString().slice(0, 10)}. ${registros.length} diagnósticos completos:`,
     "",
     ...conteo,
+    `- Avatar (5 propiedades o más): ${avatar}`,
     ...(pruebas > 0 ? [`- De ellos, pruebas internas del equipo: ${pruebas}`] : []),
     "",
     "## Contexto",
     "",
-    "Quiz para inversionistas inmobiliarios en Chile. La primera pregunta (cuántas propiedades tiene) define la ruta: A hasta 5, B de 6 a 15, C 16 o más. Las preguntas puntuadas suman un score que ubica a la persona en una fase (1 = más desordenada, 3 = más avanzada). Al terminar ve el título de su fase y, para ver el plan completo, debe dejar nombre, email y WhatsApp (el gate). El origen es utm source / medium / campaign / content / term.",
+    "Quiz para inversionistas inmobiliarios en Chile. La primera pregunta (cuántas propiedades tiene) define la ruta: A de 1 a 4, B de 5 a 15, C 16 o más. El avatar del negocio es quien tiene 5 propiedades o más. Los diagnósticos anteriores al cambio de rangos muestran las opciones viejas (\"Hasta 5\", \"Entre 6 y 15\"): en esos, \"Hasta 5\" no permite saber si es avatar. Las preguntas puntuadas suman un score que ubica a la persona en una fase (1 = más desordenada, 3 = más avanzada). Al terminar ve el título de su fase y, para ver el plan completo, debe dejar nombre, email y WhatsApp (el gate). El origen es utm source / medium / campaign / content / term.",
     "",
     "## Qué analizar",
     "",

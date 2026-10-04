@@ -2,6 +2,7 @@ import type { FaseId, Ruta } from "@/content/tipos";
 import {
   PREGUNTA_ABIERTA_ID,
   PREGUNTAS_TAG,
+  RANGOS_PROPIEDADES,
   preguntasDeRuta,
 } from "@/content/preguntas";
 import { ofertaRecomendada } from "@/content/ofertas";
@@ -35,6 +36,7 @@ export interface DiagnosticoDemo {
   telefono: string | null;
   fecha_creacion: string;
   ruta: Ruta;
+  propiedades_rango: string | null;
   fase: FaseId | null;
   score_numerico: number | null;
   estado: EstadoDiagnostico;
@@ -191,6 +193,8 @@ function generarDataset(): DiagnosticoDemo[] {
     // Reparto parecido a la encuesta del webinar: la mayoría tiene hasta 5.
     const ruta: Ruta = dadoRuta < 0.62 ? "A" : dadoRuta < 0.9 ? "B" : "C";
     const totalPreguntas = preguntasDeRuta(ruta).length;
+    const rangos = RANGOS_PROPIEDADES.filter((r) => r.ruta === ruta);
+    const rango = rangos[Math.floor(azar() * rangos.length)].id;
     const nombre = NOMBRES[Math.floor(azar() * NOMBRES.length)];
     const [utmSource, utmMedium, utmCampaign, utmContent] =
       ORIGENES[Math.floor(azar() * ORIGENES.length)];
@@ -238,6 +242,7 @@ function generarDataset(): DiagnosticoDemo[] {
       telefono: estado === "capturado" ? `+56 9 ${String(10000000 + i * 7919).slice(0, 4)} ${String(1000 + i).slice(-4)}` : null,
       fecha_creacion: fecha,
       ruta,
+      propiedades_rango: rango,
       fase: completo ? fase : null,
       score_numerico: completo ? min + Math.floor(azar() * (max - min + 1)) : null,
       estado,

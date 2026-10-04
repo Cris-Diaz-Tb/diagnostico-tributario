@@ -31,7 +31,7 @@ function conPrioridadSii(
 
 export const ROADMAPS: Record<FaseId, Roadmap> = {
   // ================================================================
-  // RUTA A · Inversionista inicial (hasta 5 propiedades) · score 7-21
+  // RUTA A · Inversionista inicial (1 a 4 propiedades) · score 7-21
   // ================================================================
   A1: {
     fase: "A1",
@@ -96,7 +96,7 @@ export const ROADMAPS: Record<FaseId, Roadmap> = {
   },
 
   // ================================================================
-  // RUTA B · Inversionista intermedio (6 a 15 propiedades) · score 7-21
+  // RUTA B · Inversionista intermedio (5 a 15 propiedades) · score 7-21
   // ================================================================
   B1: {
     fase: "B1",

@@ -8,8 +8,8 @@ Construido a partir del blueprint de la plataforma de diagnóstico de Ads House,
 
 | Ruta | Quién entra | Preguntas puntuadas | Rango | Etapas |
 |---|---|---|---|---|
-| A · Inversionista inicial | Hasta 5 propiedades | 7 | 7 a 21 | 7-11 · 12-16 · 17-21 |
-| B · Inversionista intermedio | 6 a 15 propiedades | 7 | 7 a 21 | 7-11 · 12-16 · 17-21 |
+| A · Inversionista inicial | 1 a 4 propiedades | 7 | 7 a 21 | 7-11 · 12-16 · 17-21 |
+| B · Inversionista intermedio | 5 a 15 propiedades | 7 | 7 a 21 | 7-11 · 12-16 · 17-21 |
 | C · Inversionista consolidado | 16 o más | 8 | 8 a 24 | 8-13 · 14-19 · 20-24 |
 
 Cada ruta termina con tres pantallas que no suman puntos: problema principal, qué ha hecho ya y una pregunta abierta opcional.

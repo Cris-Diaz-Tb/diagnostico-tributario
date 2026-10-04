@@ -5,7 +5,13 @@ import type { LeadParaCrm } from "@/lib/crm";
 import type { RespuestaDetallada } from "@/lib/scoring";
 import { ofertaRecomendada } from "@/content/ofertas";
 import { etapaDeFase } from "@/content/roadmaps";
-import { NOMBRE_RUTA, TEXTO_INTENCION, TEXTO_PROBLEMA } from "@/content/preguntas";
+import {
+  NOMBRE_RUTA,
+  TEXTO_INTENCION,
+  TEXTO_PROBLEMA,
+  esAvatar,
+  rangoDePropiedades,
+} from "@/content/preguntas";
 import type { FaseId, Ruta } from "@/content/tipos";
 
 /**
@@ -16,7 +22,7 @@ import type { FaseId, Ruta } from "@/content/tipos";
 
 /** Columnas que necesita `leadDesdeFila`. */
 export const COLUMNAS_LEAD =
-  "id, token_resultado, nombre, email, telefono, ruta, fase, score_numerico, problema_principal, problema_otro, nivel_intencion, texto_abierto, respuestas";
+  "id, token_resultado, nombre, email, telefono, ruta, fase, score_numerico, problema_principal, problema_otro, nivel_intencion, texto_abierto, respuestas, propiedades_rango";
 
 export interface FilaLead {
   id: string;
@@ -32,6 +38,7 @@ export interface FilaLead {
   nivel_intencion: string | null;
   texto_abierto: string | null;
   respuestas: RespuestaDetallada[] | null;
+  propiedades_rango: string | null;
 }
 
 export async function leadDesdeFila(fila: FilaLead): Promise<LeadParaCrm> {
@@ -55,6 +62,8 @@ export async function leadDesdeFila(fila: FilaLead): Promise<LeadParaCrm> {
     score: fila.score_numerico ?? 0,
     problema,
     nivelIntencion: fila.nivel_intencion,
+    propiedadesRango: rangoDePropiedades(fila.propiedades_rango)?.id ?? null,
+    avatar: esAvatar(ruta, fila.propiedades_rango),
     oferta: oferta.id,
     urlResultado: `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/resultado/${fila.token_resultado}`,
     datos: {
@@ -76,6 +85,7 @@ export async function leadDesdeFila(fila: FilaLead): Promise<LeadParaCrm> {
         problema,
         problemaOtro: fila.problema_otro,
         nivelIntencion: fila.nivel_intencion,
+        propiedades: rangoDePropiedades(fila.propiedades_rango)?.texto ?? null,
         textoAbierto: fila.texto_abierto,
         respuestas: fila.respuestas,
       }),

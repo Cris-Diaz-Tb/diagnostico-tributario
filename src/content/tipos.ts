@@ -1,6 +1,6 @@
 /**
  * Rutas del diagnóstico, separadas por número de propiedades:
- * A = hasta 5 · B = entre 6 y 15 · C = 16 o más.
+ * A = 1 a 4 · B = 5 a 15 · C = 16 o más (antes de los rangos: A hasta 5, B 6 a 15).
  */
 export type Ruta = "A" | "B" | "C";
 

@@ -25,6 +25,7 @@ import {
   RUTAS,
   TEXTO_INTENCION,
   TEXTO_PROBLEMA,
+  esAvatar,
   respuestaBifurcacion,
 } from "@/content/preguntas";
 import { OFERTAS } from "@/content/ofertas";
@@ -101,6 +102,7 @@ interface FilaDiagnostico {
   nivel_intencion: string | null;
   texto_abierto: string | null;
   es_prueba?: boolean;
+  propiedades_rango?: string | null;
 }
 
 /**
@@ -114,7 +116,7 @@ function enlaceWhatsApp(telefono: string): string {
 }
 
 const COLUMNAS_TABLA =
-  "id, nombre, email, telefono, fecha_creacion, ruta, fase, score_numerico, estado_efectivo, preguntas_respondidas, total_preguntas, oferta_recomendada, problema_principal, problema_otro, nivel_intencion, texto_abierto, es_prueba";
+  "id, nombre, email, telefono, fecha_creacion, ruta, fase, score_numerico, estado_efectivo, preguntas_respondidas, total_preguntas, oferta_recomendada, problema_principal, problema_otro, nivel_intencion, texto_abierto, es_prueba, propiedades_rango";
 
 export default async function PanelAdmin({
   searchParams,
@@ -386,7 +388,12 @@ export default async function PanelAdmin({
                     {fechaCorta(fila.fecha_creacion)}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-white/70">
-                    {respuestaBifurcacion(fila.ruta).respuesta}
+                    {respuestaBifurcacion(fila.ruta, fila.propiedades_rango).respuesta}
+                    {esAvatar(fila.ruta, fila.propiedades_rango) === true && (
+                      <span className="ml-2 rounded-full border border-emerald-400/25 bg-emerald-400/10 px-2 py-0.5 text-[11px] font-medium text-emerald-300">
+                        Avatar
+                      </span>
+                    )}
                   </td>
                   <td className="px-4 py-3">
                     <span

@@ -23,6 +23,8 @@ export interface DiagnosticoParaContexto {
   problema: string | null;
   problemaOtro: string | null;
   nivelIntencion: string | null;
+  /** "Entre 5 y 10 propiedades"; null en diagnósticos anteriores al rango. */
+  propiedades?: string | null;
   textoAbierto: string | null;
   respuestas: RespuestaDetallada[] | null;
 }
@@ -42,6 +44,7 @@ export function contextoParaBot(d: DiagnosticoParaContexto): string {
   const lineas = [
     `Código: ${d.codigo}`,
     d.nombre ? `Nombre: ${d.nombre}` : null,
+    d.propiedades ? `Propiedades: ${d.propiedades}` : null,
     `Resultado: ${NOMBRE_RUTA[ruta]}, etapa ${etapaDeFase(d.fase)} de 3 (${d.fase})`,
     d.score !== null ? `Puntaje: ${d.score}` : null,
     `Problema principal: ${problema}`,
