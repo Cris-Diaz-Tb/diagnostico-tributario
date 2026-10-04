@@ -17,7 +17,7 @@ const CTA_SII =
   "Si el SII ya te notificó, o temes que lo haga, lo primero es regularizar antes de optimizar. En una asesoría de regularización revisamos tu caso, qué corresponde declarar o rectificar y cómo responder con respaldo documentado.";
 
 const CTA_HERENCIA =
-  "En una asesoría con foco en herencia revisamos cómo planificar el impuesto a la herencia de tus propiedades sin obligar a nadie a vender, y qué estructura conviene a tu patrimonio actual.";
+  "En la Asesoría de Arquitectura Cris revisa tu caso con foco en herencia: cómo planificar el impuesto a la herencia de tus propiedades sin obligar a nadie a vender y qué estructura conviene a tu patrimonio actual.";
 
 const CTA_SOCIEDAD =
   "En una asesoría de constitución y estructuración definimos si te conviene crear o ajustar una sociedad de inversiones, qué mover a ella y en qué orden, antes de tu próxima compra.";
@@ -47,7 +47,7 @@ export const ROADMAPS: Record<FaseId, Roadmap> = {
         "Con esa lista, identifica los gastos que pagaste este año por cada propiedad (contribuciones, seguros, intereses del crédito, comisión de Airbnb si arriendas por renta corta) y súmalos. La mayoría de las personas en tu situación deja de restar al menos uno de estos, y eso es impuesto pagado de más que no se recupera solo.",
         "Escribe, junto a cada propiedad, si está a tu nombre personal o en una sociedad, y por qué. Tener este mapa, aunque hoy no cambies nada, es lo que te va a permitir decidir con criterio dónde estructurar tu patrimonio la próxima vez que compres.",
       ],
-      cta: "Con este mapa en la mano, en una asesoría revisamos si tu régimen actual es el correcto y cuánto impuesto podrías dejar de pagar usando solo lo que la ley ya te permite.",
+      cta: "Con este mapa en la mano, en la Asesoría de Arquitectura Cris revisa tu caso completo: si tu régimen actual es el correcto, cuánto impuesto podrías dejar de pagar con lo que la ley ya permite y cómo conviene estructurar tu patrimonio.",
       ctaPorTag: conPrioridadSii(),
     },
     oferta: "asesoria_patrimonial",
@@ -66,7 +66,7 @@ export const ROADMAPS: Record<FaseId, Roadmap> = {
         "Para cada propiedad a tu nombre personal, escribe si genera arriendo o es donde vives. Esto te va a mostrar cuáles son candidatas reales a moverse a una estructura societaria: no todas necesitan moverse.",
         "Revisa tu última declaración de renta y anota qué gastos restaste por cada propiedad. Compáralo con la lista completa de gastos que la ley permite deducir. Si te falta alguno, ya sabes dónde está tu primer ahorro.",
       ],
-      cta: "Con este orden hecho, en una asesoría revisamos si conviene mover alguna propiedad a una sociedad de inversiones y cuánto impuesto real te ahorraría hacerlo, antes de que compres la próxima.",
+      cta: "Con este orden hecho, en la Asesoría de Arquitectura Cris revisa tu caso completo: si conviene mover alguna propiedad a una sociedad de inversiones, cuánto impuesto real te ahorraría hacerlo y en qué orden, antes de que compres la próxima.",
       ctaPorTag: conPrioridadSii(),
     },
     oferta: "asesoria_patrimonial",
@@ -112,7 +112,7 @@ export const ROADMAPS: Record<FaseId, Roadmap> = {
         "Para cada sociedad con actividad comercial, anota qué propiedades de inversión están a su nombre. Esas son, hoy, las que están expuestas al riesgo del negocio.",
         "Revisa si tienes utilidades acumuladas sin retirar en esas sociedades; tu contador te puede dar ese número en un día. Ese monto es relevante para decidir después cómo se hace el traspaso a una estructura patrimonial separada.",
       ],
-      cta: "En una asesoría evaluamos cómo separar tu patrimonio inmobiliario del riesgo operativo de tus empresas, y qué implicancia tributaria tiene hacerlo con lo que ya tienes acumulado.",
+      cta: "En la Asesoría de Arquitectura Cris revisa tu caso completo: cómo separar tu patrimonio inmobiliario del riesgo operativo de tus empresas y qué implicancia tributaria tiene hacerlo con lo que ya tienes acumulado.",
       ctaPorTag: conPrioridadSii(),
     },
     oferta: "asesoria_patrimonial",
@@ -131,7 +131,7 @@ export const ROADMAPS: Record<FaseId, Roadmap> = {
         "Al lado de cada uno, escribe si hoy lo usas activamente o solo lo conoces. La brecha entre ambas columnas es impuesto que estás dejando de ahorrar.",
         "Pide a tu contador, o revisa tú, el detalle de utilidades retenidas de tus sociedades con propiedades. Ese número es clave para saber qué tan grande es la oportunidad de reorganizar ahora versus esperar.",
       ],
-      cta: "En una asesoría convertimos esa lista en un plan de reorganización patrimonial concreto (qué mover, a qué estructura y en qué orden) para que los beneficios que ya conoces empiecen a bajar tu carga tributaria real.",
+      cta: "En la Asesoría de Arquitectura Cris convierte esa lista en un plan de reorganización patrimonial concreto: qué mover, a qué estructura y en qué orden, para que los beneficios que ya conoces empiecen a bajar tu carga tributaria real.",
       ctaPorTag: conPrioridadSii({ sociedad: CTA_SOCIEDAD }),
     },
     oferta: "asesoria_patrimonial",
@@ -151,7 +151,7 @@ export const ROADMAPS: Record<FaseId, Roadmap> = {
         "Con ese total, revisa los tramos de la Ley de Impuesto a las Herencias, Asignaciones y Donaciones (Ley 16.271) y ubica en qué tramo caería tu patrimonio hoy. No necesitas el monto exacto, solo una magnitud real.",
         "Conversa con tu cónyuge o tus herederos directos sobre cómo les gustaría que se resolviera ese impuesto (vendiendo algo, con un seguro, con liquidez separada) antes de que sea una decisión de urgencia.",
       ],
-      cta: "En una asesoría diseñamos el plan de sucesión patrimonial completo: cómo se cubre el impuesto a la herencia sin obligar a vender, y qué estructura societaria termina de blindar lo que ya empezaste a proteger.",
+      cta: "En la Asesoría de Arquitectura Cris diseña contigo el plan de sucesión patrimonial completo: cómo se cubre el impuesto a la herencia sin obligar a vender y qué estructura societaria termina de blindar lo que ya empezaste a proteger.",
       ctaPorTag: conPrioridadSii(),
     },
     oferta: "asesoria_patrimonial",

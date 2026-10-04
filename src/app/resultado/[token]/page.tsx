@@ -4,12 +4,15 @@ import { getSupabase } from "@/lib/supabase";
 import { ctaEfectivo, etapaDeFase, FASES, ROADMAPS } from "@/content/roadmaps";
 import { NOMBRE_RUTA } from "@/content/preguntas";
 import { COPY } from "@/content/copy";
+import { ofertaDeRoadmap } from "@/content/ofertas";
+import { urlWebinarActiva } from "@/content/webinar";
 import { urlAsesoria } from "@/lib/agenda";
 import { urlWhatsapp } from "@/lib/whatsapp";
 import type { FaseId, Ruta } from "@/content/tipos";
 import { BadgePlaceholder } from "@/components/BadgePlaceholder";
 import { TrackerResultado } from "@/components/TrackerResultado";
 import { BotonWhatsapp } from "@/components/BotonWhatsapp";
+import { BotonAccion } from "@/components/BotonAccion";
 import { BrandBackdrop } from "@/components/brand/BrandBackdrop";
 
 export const metadata = {
@@ -65,6 +68,8 @@ export default async function PaginaResultado({
   const roadmap = ROADMAPS[fase];
   const ruta = fase[0] as Ruta;
   const esDemo = token.startsWith("demo-");
+  const esArquitectura = ofertaDeRoadmap(roadmap, tag).id === "asesoria_patrimonial";
+  const enlaceWebinar = urlWebinarActiva();
   const [enlaceAsesoria, enlaceWhatsapp] = await Promise.all([
     urlAsesoria(identificador, fase),
     urlWhatsapp(identificador, fase),
@@ -137,14 +142,36 @@ export default async function PaginaResultado({
           <p className="mt-3 text-sm sm:text-base text-white/75 leading-relaxed max-w-md mx-auto">
             {ctaEfectivo(roadmap, tag)}
           </p>
-          <a
-            href={enlaceAsesoria ?? COPY.marca.instagramUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="brand-btn-cta mt-6 inline-block w-full sm:w-auto rounded-2xl px-8 py-4 font-semibold"
-          >
-            {enlaceAsesoria ? COPY.resultado.ctaBoton : COPY.resultado.ctaSinEnlace}
-          </a>
+          {esArquitectura && (
+            <>
+              <p className="mt-3 text-sm sm:text-base text-white/75 leading-relaxed max-w-md mx-auto">
+                {COPY.resultado.ctaEntregable}
+              </p>
+              <p className="mt-5 text-sm font-semibold text-white/90 leading-relaxed max-w-md mx-auto text-balance">
+                {COPY.resultado.ctaRespaldo}
+              </p>
+            </>
+          )}
+          {enlaceAsesoria ? (
+            <BotonAccion
+              href={enlaceAsesoria}
+              accion="clic_agendar"
+              token={token}
+              fase={fase}
+              className="brand-btn-cta mt-6 inline-block w-full sm:w-auto rounded-2xl px-8 py-4 font-semibold"
+            >
+              {COPY.resultado.ctaBoton}
+            </BotonAccion>
+          ) : (
+            <a
+              href={COPY.marca.instagramUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="brand-btn-cta mt-6 inline-block w-full sm:w-auto rounded-2xl px-8 py-4 font-semibold"
+            >
+              {COPY.resultado.ctaSinEnlace}
+            </a>
+          )}
           {enlaceAsesoria && (
             <p className="mt-4 text-xs text-white/50 leading-relaxed">
               {COPY.resultado.ctaNota}
@@ -152,11 +179,27 @@ export default async function PaginaResultado({
           )}
           {enlaceWhatsapp && (
             <div className="mt-6 border-t border-white/10 pt-5">
-              <BotonWhatsapp href={enlaceWhatsapp} fase={fase} texto={COPY.whatsapp.boton} />
+              <BotonWhatsapp
+                href={enlaceWhatsapp}
+                token={token}
+                fase={fase}
+                texto={COPY.whatsapp.boton}
+              />
               <p className="mt-3 text-xs text-white/50 leading-relaxed">
                 {COPY.whatsapp.nota}
               </p>
             </div>
+          )}
+          {enlaceWebinar && (
+            <BotonAccion
+              href={enlaceWebinar}
+              accion="clic_webinar"
+              token={token}
+              fase={fase}
+              className="mt-5 inline-block text-sm text-white/60 underline underline-offset-4 decoration-white/25 hover:text-white hover:decoration-[var(--brand-accent)] transition"
+            >
+              {COPY.webinar.boton}
+            </BotonAccion>
           )}
         </div>
 

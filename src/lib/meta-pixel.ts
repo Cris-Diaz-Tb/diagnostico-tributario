@@ -85,3 +85,15 @@ export function trackPixel(
     { eventID: idDeEvento(idBase, evento) }
   );
 }
+
+/**
+ * Evento personalizado sin contraparte en la API de Conversiones (por
+ * ejemplo, los clics del resultado): no necesita event_id para deduplicar.
+ */
+export function trackPixelPersonalizado(
+  evento: string,
+  propiedades?: Record<string, string | number>
+): void {
+  if (!pixelId() || typeof window === "undefined" || !window.fbq) return;
+  window.fbq("trackCustom", evento, propiedades ?? {});
+}

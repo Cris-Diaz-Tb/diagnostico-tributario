@@ -3,6 +3,7 @@ import { Resend } from "resend";
 import { ctaEfectivo, etapaDeFase, roadmapDeFase } from "@/content/roadmaps";
 import { NOMBRE_RUTA } from "@/content/preguntas";
 import { COPY } from "@/content/copy";
+import { ofertaDeRoadmap } from "@/content/ofertas";
 import { urlAsesoria } from "@/lib/agenda";
 import { urlWhatsapp } from "@/lib/whatsapp";
 import type { FaseId, Ruta } from "@/content/tipos";
@@ -69,6 +70,7 @@ export async function enviarRoadmapPorEmail({
     ? COPY.resultado.ctaBoton
     : COPY.resultado.ctaSinEnlace;
   const fuente = "font-family: Helvetica, Arial, sans-serif;";
+  const esArquitectura = ofertaDeRoadmap(roadmap, tag).id === "asesoria_patrimonial";
 
   const filasPasos = roadmap.parteB.pasos
     .map(
@@ -159,9 +161,15 @@ export async function enviarRoadmapPorEmail({
               <p style="margin:0 0 6px 0; ${fuente} font-size:16px; font-weight:700; color:#ffffff;">
                 ${COPY.resultado.ctaTitulo}
               </p>
-              <p style="margin:0 0 20px 0; ${fuente} font-size:13px; line-height:1.6; color:${COLOR.textoMuted};">
+              <p style="margin:0 0 ${esArquitectura ? "10px" : "20px"} 0; ${fuente} font-size:13px; line-height:1.6; color:${COLOR.textoMuted};">
                 ${ctaEfectivo(roadmap, tag)}
               </p>
+              ${
+                esArquitectura
+                  ? `<p style="margin:0 0 14px 0; ${fuente} font-size:13px; line-height:1.6; color:${COLOR.textoMuted};">${COPY.resultado.ctaEntregable}</p>
+              <p style="margin:0 0 20px 0; ${fuente} font-size:13px; font-weight:700; line-height:1.6; color:${COLOR.texto};">${COPY.resultado.ctaRespaldo}</p>`
+                  : ""
+              }
               <table role="presentation" cellpadding="0" cellspacing="0">
                 <tr>
                   <td style="background-color:${COLOR.acento}; border-radius:10px;">

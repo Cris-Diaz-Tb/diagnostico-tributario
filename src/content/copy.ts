@@ -86,10 +86,18 @@ export const COPY = {
     guardado:
       "Te enviamos este diagnóstico a tu correo para que vuelvas a él cuando quieras.",
     ctaTitulo: "Tu siguiente paso",
+    /** Solo con la Asesoría de Arquitectura (oferta asesoria_patrimonial). */
+    ctaEntregable: "Te llevas tu Plano Tributario por escrito, con las acciones en orden.",
+    ctaRespaldo:
+      "Sesión 1:1 con Cris, arquitecto tributario con 14 años en tributación inmobiliaria.",
     ctaBoton: "Quiero agendar mi asesoría",
     ctaNota:
-      "Eliges el día y la hora que te acomoden. La reserva queda confirmada al instante.",
+      "Eliges el día y la hora que te acomoden. Tu reserva queda confirmada al completar el pago.",
     ctaSinEnlace: "Escríbenos por Instagram",
+  },
+
+  webinar: {
+    boton: "Todavía no. Quiero ir a la clase en vivo del 5 de noviembre",
   },
 
   whatsapp: {
