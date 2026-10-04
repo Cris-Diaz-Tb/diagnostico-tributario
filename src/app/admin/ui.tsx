@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { BrandBackdrop } from "@/components/brand/BrandBackdrop";
-import { logoutAdmin } from "./actions";
+import { logoutAdmin, marcarPrueba } from "./actions";
 import type { FaseId } from "@/content/tipos";
 
 /**
@@ -28,6 +28,7 @@ const PESTANAS = [
   { href: "/admin", texto: "Embudo" },
   { href: "/admin/abandonos", texto: "Abandonos" },
   { href: "/admin/utm", texto: "Atribución" },
+  { href: "/admin/exportar-ia", texto: "Exportar para IA" },
   { href: "/admin/configuracion", texto: "Configuración" },
 ];
 
@@ -106,6 +107,39 @@ export function Contador({
       <p className={`font-display text-2xl font-bold mt-1.5 ${color}`}>{valor}</p>
       {nota && <p className="text-[11px] text-white/35 mt-1">{nota}</p>}
     </div>
+  );
+}
+
+/**
+ * Etiqueta de prueba interna con su botón para corregirla. Las pruebas no
+ * cuentan en el embudo ni salen en la exportación para IA por defecto.
+ */
+export function BotonPrueba({
+  id,
+  esPrueba,
+  volver,
+}: {
+  id: string;
+  esPrueba: boolean;
+  volver: string;
+}) {
+  return (
+    <form action={marcarPrueba} className="inline-flex items-center gap-1.5 ml-2">
+      <input type="hidden" name="id" value={id} />
+      <input type="hidden" name="es_prueba" value={esPrueba ? "0" : "1"} />
+      <input type="hidden" name="volver" value={volver} />
+      {esPrueba && (
+        <span className="whitespace-nowrap rounded-full border border-amber-400/30 bg-amber-400/10 px-2 py-0.5 text-[11px] font-medium text-amber-300">
+          Prueba
+        </span>
+      )}
+      <button
+        className="whitespace-nowrap text-[11px] text-white/35 underline hover:text-white/70 transition"
+        title={esPrueba ? "Volver a contarlo como lead real" : "Marcar como prueba interna"}
+      >
+        {esPrueba ? "es real" : "es prueba"}
+      </button>
+    </form>
   );
 }
 

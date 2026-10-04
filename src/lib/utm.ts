@@ -1,8 +1,10 @@
 "use client";
 
+import { COOKIE_PRUEBA } from "./prueba";
+
 /**
- * Captura la atribución al aterrizar y la conserva en sessionStorage
- * durante toda la sesión.
+ * Captura la atribución al aterrizar y la conserva entre páginas, pestañas
+ * y recargas durante VIGENCIA_MS.
  *
  * Se envía en la PRIMERA respuesta del quiz, no al final — así un
  * diagnóstico abandonado también conserva de dónde vino, que es
@@ -11,9 +13,28 @@
  * Además de los UTMs se capturan los click-id de cada plataforma
  * (fbclid, gclid, ttclid): sin ellos la conversión no se puede atribuir
  * al anuncio exacto que la generó.
+ *
+ * Antes vivía en sessionStorage y solo se capturaba en la portada: si el
+ * anuncio llevaba directo a /diagnostico, o la persona volvía en otra
+ * pestaña, el lead quedaba como "directo". Ahora se captura en todas las
+ * páginas y se guarda en localStorage.
  */
 
 const CLAVE = "dd_utm";
+/** Ventana de atribución: una visita sin UTMs dentro de este plazo hereda la última campaña. */
+const VIGENCIA_MS = 7 * 86_400_000;
+
+/** Parámetros que indican que la visita viene de una campaña. */
+const PARAMS_CAMPANA = [
+  "utm_source",
+  "utm_medium",
+  "utm_campaign",
+  "utm_content",
+  "utm_term",
+  "fbclid",
+  "gclid",
+  "ttclid",
+];
 
 export interface DatosUtm {
   source: string | null;
@@ -28,42 +49,85 @@ export interface DatosUtm {
   ttclid: string | null;
   /** Momento del clic en el anuncio — necesario para reconstruir _fbc. */
   fbclidAt: number | null;
+  /** Cuándo empezó esta atribución, para hacer vencer la ventana. */
+  capturadoAt?: number;
+}
+
+/**
+ * Decide la atribución vigente. Una visita con parámetros de campaña
+ * reemplaza el set COMPLETO (no campo a campo: mezclar el source de un
+ * anuncio con el content de otro da una atribución que no existe). Sin
+ * parámetros, se conserva la anterior mientras siga vigente.
+ */
+export function resolverAtribucion(
+  params: URLSearchParams,
+  previo: DatosUtm | null,
+  contexto: { referrer: string | null; path: string; ahora: number }
+): DatosUtm {
+  const esCampana = PARAMS_CAMPANA.some((p) => params.get(p));
+  const vigente =
+    previo && contexto.ahora - (previo.capturadoAt ?? contexto.ahora) < VIGENCIA_MS
+      ? previo
+      : null;
+
+  if (!esCampana && vigente) return vigente;
+
+  const fbclid = params.get("fbclid");
+  return {
+    source: params.get("utm_source"),
+    medium: params.get("utm_medium"),
+    campaign: params.get("utm_campaign"),
+    content: params.get("utm_content"),
+    term: params.get("utm_term"),
+    referrer: contexto.referrer,
+    landingPath: contexto.path,
+    fbclid,
+    gclid: params.get("gclid"),
+    ttclid: params.get("ttclid"),
+    // El _fbc reconstruido debe apuntar al instante real del clic.
+    fbclidAt: fbclid ? contexto.ahora : null,
+    capturadoAt: contexto.ahora,
+  };
 }
 
 export function capturarUtm(): void {
   try {
-    const params = new URLSearchParams(window.location.search);
-    const previo = leerUtm();
-    const fbclid = params.get("fbclid") ?? previo?.fbclid ?? null;
-
-    const datos: DatosUtm = {
-      source: params.get("utm_source") ?? previo?.source ?? null,
-      medium: params.get("utm_medium") ?? previo?.medium ?? null,
-      campaign: params.get("utm_campaign") ?? previo?.campaign ?? null,
-      content: params.get("utm_content") ?? previo?.content ?? null,
-      term: params.get("utm_term") ?? previo?.term ?? null,
-      referrer: previo?.referrer ?? (document.referrer || null),
-      landingPath: previo?.landingPath ?? window.location.pathname,
-      fbclid,
-      gclid: params.get("gclid") ?? previo?.gclid ?? null,
-      ttclid: params.get("ttclid") ?? previo?.ttclid ?? null,
-      // Se sella la primera vez que se ve el fbclid y no se vuelve a tocar:
-      // el _fbc reconstruido debe apuntar al instante real del clic.
-      fbclidAt: previo?.fbclidAt ?? (params.get("fbclid") ? Date.now() : null),
-    };
-
-    sessionStorage.setItem(CLAVE, JSON.stringify(datos));
+    const datos = resolverAtribucion(new URLSearchParams(window.location.search), leerUtm(), {
+      referrer: document.referrer || null,
+      path: window.location.pathname,
+      ahora: Date.now(),
+    });
+    localStorage.setItem(CLAVE, JSON.stringify(datos));
   } catch {
-    // sessionStorage no disponible (modo privado extremo): seguir sin UTMs
+    // localStorage no disponible (modo privado extremo): seguir sin UTMs
   }
 }
 
 export function leerUtm(): DatosUtm | null {
   try {
-    const crudo = sessionStorage.getItem(CLAVE);
+    // sessionStorage: donde vivía antes, para no perder sesiones abiertas.
+    const crudo = localStorage.getItem(CLAVE) ?? sessionStorage.getItem(CLAVE);
     return crudo ? (JSON.parse(crudo) as DatosUtm) : null;
   } catch {
     return null;
+  }
+}
+
+/**
+ * Pruebas internas: `?prueba=1` en cualquier página marca este navegador
+ * (y el login al panel hace lo mismo); `?prueba=0` lo desmarca. El
+ * servidor lee la cookie al crear el diagnóstico.
+ */
+export function capturarMarcaPrueba(): void {
+  try {
+    const valor = new URLSearchParams(window.location.search).get("prueba");
+    if (valor === "1") {
+      document.cookie = `${COOKIE_PRUEBA}=1; path=/; max-age=31536000; samesite=lax`;
+    } else if (valor === "0") {
+      document.cookie = `${COOKIE_PRUEBA}=; path=/; max-age=0; samesite=lax`;
+    }
+  } catch {
+    // Sin cookies: la prueba se puede marcar a mano desde el panel.
   }
 }
 

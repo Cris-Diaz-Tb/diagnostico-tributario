@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Barlow, Geist, Geist_Mono, Source_Serif_4 } from "next/font/google";
 import { MetaPixel } from "@/components/MetaPixel";
+import { CapturaUtm } from "@/components/CapturaUtm";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -46,6 +47,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <MetaPixel />
+        <CapturaUtm />
         {children}
       </body>
     </html>

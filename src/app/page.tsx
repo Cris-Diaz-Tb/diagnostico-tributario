@@ -1,7 +1,6 @@
 import Link from "next/link";
 import type { Viewport } from "next";
 import { COPY } from "@/content/copy";
-import { CapturaUtm } from "@/components/CapturaUtm";
 import { BadgePlaceholder } from "@/components/BadgePlaceholder";
 import { BrandBackdrop } from "@/components/brand/BrandBackdrop";
 
@@ -13,7 +12,6 @@ export default function Landing() {
       outerClassName="flex-1"
       innerClassName="flex-1 flex items-center justify-center px-4 py-14 sm:py-20"
     >
-      <CapturaUtm />
       <div className="w-full max-w-xl text-center brand-pop-in">
         <p className="text-xs font-semibold tracking-[0.2em] text-white/60 uppercase">
           {COPY.marca.nombre}

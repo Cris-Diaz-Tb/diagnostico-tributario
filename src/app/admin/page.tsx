@@ -10,6 +10,7 @@ import {
 } from "@/lib/demo-data";
 import {
   Barra,
+  BotonPrueba,
   COLOR_FASE,
   Contador,
   FASES,
@@ -20,7 +21,12 @@ import {
   porcentaje,
 } from "./ui";
 import type { FaseId, Ruta } from "@/content/tipos";
-import { RUTAS, TEXTO_INTENCION, TEXTO_PROBLEMA } from "@/content/preguntas";
+import {
+  RUTAS,
+  TEXTO_INTENCION,
+  TEXTO_PROBLEMA,
+  respuestaBifurcacion,
+} from "@/content/preguntas";
 import { OFERTAS } from "@/content/ofertas";
 import { digitosDeTelefono } from "@/lib/telefono";
 
@@ -94,6 +100,7 @@ interface FilaDiagnostico {
   problema_otro: string | null;
   nivel_intencion: string | null;
   texto_abierto: string | null;
+  es_prueba?: boolean;
 }
 
 /**
@@ -107,7 +114,7 @@ function enlaceWhatsApp(telefono: string): string {
 }
 
 const COLUMNAS_TABLA =
-  "id, nombre, email, telefono, fecha_creacion, ruta, fase, score_numerico, estado_efectivo, preguntas_respondidas, total_preguntas, oferta_recomendada, problema_principal, problema_otro, nivel_intencion, texto_abierto";
+  "id, nombre, email, telefono, fecha_creacion, ruta, fase, score_numerico, estado_efectivo, preguntas_respondidas, total_preguntas, oferta_recomendada, problema_principal, problema_otro, nivel_intencion, texto_abierto, es_prueba";
 
 export default async function PanelAdmin({
   searchParams,
@@ -333,6 +340,7 @@ export default async function PanelAdmin({
               <th className="px-4 py-3">Email</th>
               <th className="px-4 py-3">WhatsApp</th>
               <th className="px-4 py-3">Fecha</th>
+              <th className="px-4 py-3">Propiedades</th>
               <th className="px-4 py-3">Estado</th>
               <th className="px-4 py-3">Avance</th>
               <th className="px-4 py-3">Fase</th>
@@ -345,7 +353,7 @@ export default async function PanelAdmin({
           </thead>
           <tbody>
             {filas.length === 0 && (
-              <TablaVacia columnas={12} texto="Sin diagnósticos todavía." />
+              <TablaVacia columnas={13} texto="Sin diagnósticos todavía." />
             )}
             {filas.map((fila) => {
               const etiqueta = ETIQUETA_ESTADO[fila.estado_efectivo];
@@ -377,12 +385,20 @@ export default async function PanelAdmin({
                   <td className="px-4 py-3 whitespace-nowrap text-white/45">
                     {fechaCorta(fila.fecha_creacion)}
                   </td>
+                  <td className="px-4 py-3 whitespace-nowrap text-white/70">
+                    {respuestaBifurcacion(fila.ruta).respuesta}
+                  </td>
                   <td className="px-4 py-3">
                     <span
                       className={`whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium ${etiqueta.clase}`}
                     >
                       {etiqueta.texto}
                     </span>
+                    <BotonPrueba
+                      id={fila.id}
+                      esPrueba={Boolean(fila.es_prueba)}
+                      volver={urlCon({ pagina: pagina > 1 ? String(pagina) : null })}
+                    />
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap font-mono text-xs text-white/60">
                     {fila.preguntas_respondidas}/{fila.total_preguntas ?? "?"}

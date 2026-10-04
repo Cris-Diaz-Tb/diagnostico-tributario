@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { z } from "zod";
 import { detallarParcial } from "@/lib/scoring";
 import { generarToken } from "@/lib/token";
 import { getSupabase } from "@/lib/supabase";
 import { enviarEventoCapi } from "@/lib/meta-capi";
 import { ipDePeticion, permitirSesion } from "@/lib/ratelimit";
+import { COOKIE_PRUEBA } from "@/lib/prueba";
 
 /**
  * Guardado progresivo del diagnóstico.
@@ -130,6 +132,7 @@ export async function POST(request: Request) {
       iniciado_at: ahora,
       ultima_actividad_at: ahora,
       evento_id: body.idBase,
+      es_prueba: (await cookies()).get(COOKIE_PRUEBA)?.value === "1",
       // La atribución se guarda AQUÍ, no al completar: por eso un
       // diagnóstico abandonado también conserva de dónde vino.
       utm_source: atrib?.utm?.source ?? null,

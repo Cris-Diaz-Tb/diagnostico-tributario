@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { esAdmin } from "@/lib/admin-auth";
 import { getSupabase } from "@/lib/supabase";
 import type { RespuestaDetallada } from "@/lib/scoring";
+import { respuestaBifurcacion } from "@/content/preguntas";
+import type { Ruta } from "@/content/tipos";
 
 /**
  * Exportación CSV de los diagnósticos.
@@ -13,11 +15,14 @@ import type { RespuestaDetallada } from "@/lib/scoring";
 
 const COLUMNAS = [
   "id",
+  "codigo",
   "fecha",
   "estado",
+  "es_prueba",
   "nombre",
   "email",
   "telefono",
+  "propiedades",
   "ruta",
   "fase",
   "score",
@@ -50,12 +55,16 @@ function celda(valor: unknown): string {
   return `"${texto.replaceAll('"', '""')}"`;
 }
 
-/** Aplana el detalle de respuestas a "pregunta: opción | pregunta: opción". */
-function resumirRespuestas(respuestas: unknown): string {
-  if (!Array.isArray(respuestas)) return "";
-  return (respuestas as RespuestaDetallada[])
-    .map((r) => `${r.preguntaId}: ${r.opcion}`)
-    .join(" | ");
+/**
+ * Aplana el detalle de respuestas a "pregunta: opción | pregunta: opción".
+ * Empieza por la bifurcación, que no se guarda como respuesta.
+ */
+function resumirRespuestas(ruta: Ruta, respuestas: unknown): string {
+  const detalle = Array.isArray(respuestas) ? (respuestas as RespuestaDetallada[]) : [];
+  return [
+    `propiedades: ${respuestaBifurcacion(ruta).respuesta}`,
+    ...detalle.map((r) => `${r.preguntaId}: ${r.opcion}`),
+  ].join(" | ");
 }
 
 export async function GET(request: Request) {
@@ -89,11 +98,14 @@ export async function GET(request: Request) {
   const filas = (data ?? []).map((d) =>
     [
       d.id,
+      d.codigo,
       d.fecha_creacion,
       d.estado_efectivo,
+      d.es_prueba ? "si" : "no",
       d.nombre,
       d.email,
       d.telefono,
+      respuestaBifurcacion(d.ruta).respuesta,
       d.ruta,
       d.fase,
       d.score_numerico,
@@ -111,7 +123,7 @@ export async function GET(request: Request) {
       d.utm_content,
       d.utm_term,
       d.referrer,
-      resumirRespuestas(d.respuestas),
+      resumirRespuestas(d.ruta, d.respuestas),
     ]
       .map(celda)
       .join(",")

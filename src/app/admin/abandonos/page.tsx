@@ -7,9 +7,9 @@ import {
   abandonoPorPreguntaDemo,
   type EstadoEfectivo,
 } from "@/lib/demo-data";
-import { preguntasDeRuta, RUTAS } from "@/content/preguntas";
+import { preguntasDeRuta, respuestaBifurcacion, RUTAS } from "@/content/preguntas";
 import { faseEstimadaDeDetalle, type RespuestaDetallada } from "@/lib/scoring";
-import { Barra, COLOR_FASE, Contador, Filtro, Marco, fechaCorta, porcentaje } from "../ui";
+import { Barra, BotonPrueba, COLOR_FASE, Contador, Filtro, Marco, fechaCorta, porcentaje } from "../ui";
 import type { FaseId, Ruta } from "@/content/tipos";
 
 export const metadata = { title: "Abandonos | Cris. Tributario" };
@@ -48,6 +48,8 @@ interface FilaAbandono {
   utm_source: string | null;
   utm_campaign: string | null;
   utm_content: string | null;
+  utm_term?: string | null;
+  es_prueba?: boolean;
 }
 
 export default async function PanelAbandonos({
@@ -79,7 +81,7 @@ export default async function PanelAbandonos({
     let consulta = supabase
       .from("diagnosticos_embudo")
       .select(
-        "id, nombre, email, fecha_creacion, ultima_actividad_at, ruta, estado_efectivo, preguntas_respondidas, total_preguntas, ultima_pregunta_id, respuestas, fase, utm_source, utm_campaign, utm_content",
+        "id, nombre, email, fecha_creacion, ultima_actividad_at, ruta, estado_efectivo, preguntas_respondidas, total_preguntas, ultima_pregunta_id, respuestas, fase, utm_source, utm_campaign, utm_content, utm_term, es_prueba",
         { count: "exact" }
       )
       .in("estado_efectivo", estados)
@@ -263,6 +265,11 @@ export default async function PanelAbandonos({
                     {fila.email && <span className="text-white/40"> · {fila.email}</span>}
                   </span>
                 )}
+                {fila.es_prueba && (
+                  <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-2 py-0.5 text-[11px] font-medium text-amber-300">
+                    Prueba
+                  </span>
+                )}
                 {estimada && (
                   <span
                     className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${COLOR_FASE[estimada]}`}
@@ -278,6 +285,11 @@ export default async function PanelAbandonos({
               </summary>
 
               <div className="mt-3 border-t border-white/10 pt-3 space-y-2">
+                {/* La ruta es la respuesta a cuántas propiedades tiene */}
+                <div className="text-xs">
+                  <p className="text-white/45">{respuestaBifurcacion(fila.ruta).pregunta}</p>
+                  <p className="text-white/85">{respuestaBifurcacion(fila.ruta).respuesta}</p>
+                </div>
                 {detalle.length === 0 && (
                   <p className="text-xs text-white/35">Sin respuestas guardadas.</p>
                 )}
@@ -298,8 +310,16 @@ export default async function PanelAbandonos({
                   <p className="text-[11px] text-white/35 pt-1">
                     Origen: {fila.utm_source ?? "—"} · {fila.utm_campaign ?? "—"} ·{" "}
                     {fila.utm_content ?? "—"}
+                    {fila.utm_term && ` · ${fila.utm_term}`}
                   </p>
                 )}
+                <div className="pt-1 -ml-2">
+                  <BotonPrueba
+                    id={fila.id}
+                    esPrueba={Boolean(fila.es_prueba)}
+                    volver={urlCon({ pagina: pagina > 1 ? String(pagina) : null })}
+                  />
+                </div>
                 {!fila.fase && (
                   <p className="text-[11px] text-white/30 pt-1">
                     La fase marcada con ~ es una estimación proyectada desde las

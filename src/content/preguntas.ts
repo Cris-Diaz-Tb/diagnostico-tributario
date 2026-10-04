@@ -30,6 +30,15 @@ export const PREGUNTA_BIFURCACION = {
   ],
 };
 
+/**
+ * La bifurcación no se guarda en `respuestas`: la ruta ES la respuesta.
+ * Se reconstruye para mostrarla en el panel y en las exportaciones.
+ */
+export function respuestaBifurcacion(ruta: Ruta): { pregunta: string; respuesta: string } {
+  const opcion = PREGUNTA_BIFURCACION.opciones.find((o) => o.ruta === ruta);
+  return { pregunta: PREGUNTA_BIFURCACION.texto, respuesta: opcion?.texto ?? ruta };
+}
+
 // ------------------------------------------------------------------
 // Preguntas de clasificación: iguales en las tres rutas. Cada ruta usa
 // sus propios ids para que el panel de abandonos distinga dónde se cae.
