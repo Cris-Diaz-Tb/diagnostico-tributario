@@ -64,18 +64,20 @@ export const COPY = {
   },
 
   gate: {
-    titulo: "Tu diagnóstico está listo",
+    titulo: "¿A dónde te enviamos tus 3 pasos?",
     subtitulo:
-      "Déjanos tus datos para desbloquear tus 3 pasos concretos y proteger tu patrimonio.",
+      "El primero ya es tuyo. Déjanos tu correo y ves los otros dos ahora mismo; también te llegan al correo para que vuelvas a ellos.",
+    pasosTitulo: "Tus 3 pasos concretos",
+    pasoLibre: "Puedes empezar hoy",
+    pasoBloqueado: "Se desbloquea con tu correo",
     labelNombre: "Tu nombre",
     labelEmail: "Tu correo",
     labelTelefono: "Tu WhatsApp",
     placeholderTelefono: "+56 9 1234 5678",
-    ayudaTelefono: "Te confirmamos por aquí la hora de tu asesoría.",
     consentimiento:
       "Acepto recibir mi diagnóstico y correos de Cris. Tributario sobre tributación e inversión inmobiliaria. Puedo darme de baja cuando quiera.",
-    boton: "Desbloquear mi diagnóstico completo",
-    enviando: "Desbloqueando…",
+    boton: "Ver mis 3 pasos ahora",
+    enviando: "Preparando tus pasos…",
     privacidad: "Tus datos están protegidos. Ver política de privacidad.",
   },
 
