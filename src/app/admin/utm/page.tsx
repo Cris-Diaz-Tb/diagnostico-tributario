@@ -147,10 +147,10 @@ export default async function PanelUtm({
             <tr className="border-b border-white/10 text-left text-xs text-white/45 uppercase tracking-wide">
               <th className="px-4 py-3">Origen</th>
               <th className="px-4 py-3 text-right">Iniciaron</th>
+              <th className="px-4 py-3 text-right">Vieron el gate</th>
               <th className="px-4 py-3 text-right">Completaron</th>
-              <th className="px-4 py-3 text-right">Dejaron email</th>
+              <th className="px-4 py-3 text-right">% llega al gate</th>
               <th className="px-4 py-3 text-right">% completa</th>
-              <th className="px-4 py-3 text-right">% captura</th>
             </tr>
           </thead>
           <tbody>

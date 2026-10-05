@@ -39,7 +39,7 @@ export const dynamic = "force-dynamic";
 const POR_PAGINA = 20;
 
 const ESTADOS: Array<{ id: EstadoEfectivo; texto: string }> = [
-  { id: "capturado", texto: "Dejó email" },
+  { id: "capturado", texto: "Completado" },
   { id: "abandono_gate", texto: "Abandonó en el gate" },
   { id: "abandono_preguntas", texto: "Abandonó en preguntas" },
   { id: "en_curso", texto: "En curso" },
@@ -47,7 +47,7 @@ const ESTADOS: Array<{ id: EstadoEfectivo; texto: string }> = [
 
 const ETIQUETA_ESTADO: Record<EstadoEfectivo, { texto: string; clase: string }> = {
   capturado: {
-    texto: "Dejó email",
+    texto: "Completado",
     clase: "bg-emerald-400/10 text-emerald-300 border border-emerald-400/25",
   },
   abandono_gate: {
@@ -215,7 +215,8 @@ export default async function PanelAdmin({
 
   return (
     <Marco usandoDemo={usandoDemo} activa="/admin">
-      {/* Contadores del embudo */}
+      {/* Contadores del embudo. Las mismas tres etapas que en Meta:
+          DiagnosticoIniciado → DiagnosticoIncompleto (gate) → DiagnosticoCompletado. */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
         <Contador
           etiqueta="Iniciados"
@@ -223,15 +224,15 @@ export default async function PanelAdmin({
           nota="respondieron ≥1 pregunta"
         />
         <Contador
-          etiqueta="Completados"
+          etiqueta="Vieron el gate"
           valor={String(completados)}
-          nota={`${porcentaje(completados, iniciados)}% de los iniciados`}
+          nota={`vieron el preview · ${porcentaje(completados, iniciados)}% de los iniciados`}
         />
         <Contador
-          etiqueta="Con email"
+          etiqueta="Completados"
           valor={String(capturados)}
           matiz="bueno"
-          nota={`${porcentaje(capturados, iniciados)}% de los iniciados`}
+          nota={`dejaron sus datos y vieron su diagnóstico · ${porcentaje(capturados, iniciados)}% de los iniciados`}
         />
         <Contador
           etiqueta="Abandono en quiz"
@@ -243,7 +244,7 @@ export default async function PanelAdmin({
           etiqueta="Abandono en gate"
           valor={`${porcentaje(abandonoGate, completados)}%`}
           matiz="alerta"
-          nota={`${abandonoGate} vieron su fase y no dejaron correo`}
+          nota={`${abandonoGate} vieron el preview y no dejaron sus datos`}
         />
       </div>
 
@@ -259,20 +260,20 @@ export default async function PanelAdmin({
           detalle="100%"
         />
         <Barra
-          etiqueta="Terminaron las preguntas"
+          etiqueta="Vieron el gate (preview de su diagnóstico)"
           valor={completados}
           maximo={iniciados}
           detalle={`${porcentaje(completados, iniciados)}%`}
         />
         <Barra
-          etiqueta="Dejaron su email"
+          etiqueta="Completaron (dejaron sus datos y vieron su diagnóstico)"
           valor={capturados}
           maximo={iniciados}
           detalle={`${porcentaje(capturados, iniciados)}%`}
         />
       </div>
 
-      {/* Distribución por fase (solo diagnósticos completados) */}
+      {/* Distribución por fase (todos los que llegaron al gate) */}
       <div className="flex flex-wrap items-center gap-2 mb-6">
         <span className="text-xs text-white/40 uppercase tracking-wide mr-1">
           Fases
