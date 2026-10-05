@@ -424,7 +424,7 @@ function GateResultado({
         </p>
       )}
 
-      {/* Parte A: visible — valida el diagnóstico y genera curiosidad */}
+      {/* Parte A: la etapa y el título a la vista; el diagnóstico, bloqueado */}
       <div className="brand-glass relative overflow-hidden rounded-2xl p-5 mb-6 brand-pop-in">
         <span
           aria-hidden="true"
@@ -441,15 +441,17 @@ function GateResultado({
         <h1 className="font-display text-2xl sm:text-3xl font-medium mt-3">
           {roadmap.parteA.titulo}
         </h1>
-        <p className="mt-3 text-white/75 leading-relaxed text-sm sm:text-base">
-          {roadmap.parteA.diagnostico}
-        </p>
+        <TextoBloqueado
+          texto={roadmap.parteA.diagnostico}
+          palabras={12}
+          lineas={4}
+          className="mt-3 text-white/75 text-sm sm:text-base"
+        />
       </div>
 
-      {/* Los 3 pasos a la vista: el 1 completo, el 2 y el 3 bloqueados */}
       <PasosBloqueados pasos={roadmap.parteB.pasos} />
 
-      {/* Gate: los pasos 2 y 3 se desbloquean con el email */}
+      {/* Gate: el diagnóstico y los 3 pasos se desbloquean con el email */}
       <h2 className="font-display text-lg font-bold">{COPY.gate.titulo}</h2>
       <p className="mt-1 text-sm text-[var(--brand-text-muted)]">
         {COPY.gate.subtitulo}
@@ -525,66 +527,62 @@ function GateResultado({
   );
 }
 
-/** Primeras palabras de un paso: muestran de qué trata sin entregarlo. */
-function inicioDelPaso(texto: string, palabras = 8): string {
-  return texto.split(/\s+/).slice(0, palabras).join(" ").replace(/[,.:;]$/, "");
+/**
+ * Asoman las primeras palabras de un texto y el resto queda como líneas
+ * borrosas: se ve de qué trata sin entregarlo antes del correo. El texto
+ * completo no se pinta (aunque viaja en el bundle, como el resto de ROADMAPS).
+ */
+function TextoBloqueado({
+  texto,
+  palabras,
+  lineas,
+  className,
+}: {
+  texto: string;
+  palabras: number;
+  lineas: number;
+  className?: string;
+}) {
+  const inicio = texto.split(/\s+/).slice(0, palabras).join(" ").replace(/[,.:;]$/, "");
+  return (
+    <div className={className}>
+      <p className="leading-relaxed">{inicio}…</p>
+      <div aria-hidden="true" className="mt-2 space-y-1.5 blur-[3px] select-none">
+        {Array.from({ length: lineas }, (_, i) => (
+          <div
+            key={i}
+            className={`h-2.5 rounded bg-white/15 ${i === lineas - 1 ? "w-4/5" : "w-full"}`}
+          />
+        ))}
+      </div>
+    </div>
+  );
 }
 
-/**
- * Los 3 pasos antes del correo. El 1 va completo para que la persona vea
- * que lo que hay detrás vale; del 2 y el 3 solo asoma el inicio. El resto
- * del texto no se pinta (aunque viaja en el bundle, como el resto de ROADMAPS).
- */
+/** Los 3 pasos antes del correo: todos bloqueados, solo asoma su inicio. */
 function PasosBloqueados({ pasos }: { pasos: readonly string[] }) {
   return (
     <div className="mb-7">
       <h2 className="font-display text-lg font-bold">{COPY.gate.pasosTitulo}</h2>
       <ol className="mt-3 space-y-3">
-        {pasos.map((paso, i) => {
-          const libre = i === 0;
-          return (
-            <li
-              key={i}
-              className={`rounded-2xl border p-4 ${
-                libre
-                  ? "border-[var(--brand-accent)]/40 bg-[var(--brand-accent)]/[0.06]"
-                  : "border-white/10 bg-white/[0.03]"
-              }`}
-            >
-              <div className="flex items-center gap-2.5">
-                <span
-                  className={`flex-none h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold ${
-                    libre
-                      ? "bg-[var(--brand-accent)] text-white"
-                      : "bg-white/10 text-white/60"
-                  }`}
-                >
-                  {i + 1}
-                </span>
-                <span
-                  className={`text-[11px] font-bold uppercase tracking-wide ${
-                    libre ? "text-[var(--brand-accent-light)]" : "text-white/45"
-                  }`}
-                >
-                  {libre ? COPY.gate.pasoLibre : `🔒 ${COPY.gate.pasoBloqueado}`}
-                </span>
-              </div>
-              {libre ? (
-                <p className="mt-2.5 text-sm leading-relaxed text-white/80">{paso}</p>
-              ) : (
-                <div className="mt-2.5">
-                  <p className="text-sm leading-relaxed text-white/70">
-                    {inicioDelPaso(paso)}…
-                  </p>
-                  <div aria-hidden="true" className="mt-2 space-y-1.5 blur-[3px] select-none">
-                    <div className="h-2.5 w-full rounded bg-white/15" />
-                    <div className="h-2.5 w-4/5 rounded bg-white/15" />
-                  </div>
-                </div>
-              )}
-            </li>
-          );
-        })}
+        {pasos.map((paso, i) => (
+          <li key={i} className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+            <div className="flex items-center gap-2.5">
+              <span className="flex-none h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold bg-white/10 text-white/60">
+                {i + 1}
+              </span>
+              <span className="text-[11px] font-bold uppercase tracking-wide text-white/45">
+                🔒 {COPY.gate.pasoBloqueado}
+              </span>
+            </div>
+            <TextoBloqueado
+              texto={paso}
+              palabras={8}
+              lineas={2}
+              className="mt-2.5 text-sm text-white/70"
+            />
+          </li>
+        ))}
       </ol>
     </div>
   );

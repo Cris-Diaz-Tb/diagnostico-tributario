@@ -64,11 +64,10 @@ export const COPY = {
   },
 
   gate: {
-    titulo: "¿A dónde te enviamos tus 3 pasos?",
+    titulo: "¿A dónde te enviamos tu diagnóstico?",
     subtitulo:
-      "El primero ya es tuyo. Déjanos tu correo y ves los otros dos ahora mismo; también te llegan al correo para que vuelvas a ellos.",
+      "Déjanos tus datos y ves ahora mismo tu diagnóstico completo y tus 3 pasos. También te llegan al correo para que vuelvas a ellos.",
     pasosTitulo: "Tus 3 pasos concretos",
-    pasoLibre: "Puedes empezar hoy",
     pasoBloqueado: "Se desbloquea con tu correo",
     labelNombre: "Tu nombre",
     labelEmail: "Tu correo",
@@ -76,7 +75,7 @@ export const COPY = {
     placeholderTelefono: "+56 9 1234 5678",
     consentimiento:
       "Acepto recibir mi diagnóstico y correos de Cris. Tributario sobre tributación e inversión inmobiliaria. Puedo darme de baja cuando quiera.",
-    boton: "Ver mis 3 pasos ahora",
+    boton: "Ver mi diagnóstico completo",
     enviando: "Preparando tus pasos…",
     privacidad: "Tus datos están protegidos. Ver política de privacidad.",
   },
