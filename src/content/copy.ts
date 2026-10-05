@@ -131,12 +131,12 @@ export const COPY = {
    */
   landingEtapas: {
     status: "placeholder" as "placeholder" | "aprobado",
-    etiqueta: "Diagnóstico gratuito · 2 minutos",
+    etiqueta: "Diagnóstico tributario · 2 minutos",
     titulo:
       "Aunque tus propiedades rindan, podrías estar pagando más impuesto del que la ley exige",
     subtitulo:
       "Todo inversionista inmobiliario pasa por 3 etapas con sus impuestos. Descubre en cuál estás y qué hacer esta semana para pagar lo que corresponde, no más.",
-    boton: "Descubrir mi etapa gratis",
+    boton: "Descubrir mi etapa",
     nota: "Sin registro previo · Tus respuestas son confidenciales",
 
     etapasTitulo: "Las 3 etapas de un patrimonio inmobiliario",
@@ -231,7 +231,7 @@ export const COPY = {
     faq: [
       {
         p: "¿Tiene algún costo?",
-        r: "No. El diagnóstico es gratuito.",
+        r: "No. Hacer el diagnóstico no tiene costo.",
       },
       {
         p: "¿Tengo que registrarme?",
