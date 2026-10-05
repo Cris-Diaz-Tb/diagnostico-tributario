@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ZONA_CHILE } from "@/lib/hora-chile";
 import { BrandBackdrop } from "@/components/brand/BrandBackdrop";
 import { cambiarEspacio, logoutAdmin, marcarPrueba } from "./actions";
 import type { FaseId } from "@/content/tipos";
@@ -257,5 +258,6 @@ export function fechaCorta(iso: string): string {
     month: "short",
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: ZONA_CHILE,
   });
 }

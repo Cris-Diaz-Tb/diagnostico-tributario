@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { esAdmin } from "@/lib/admin-auth";
 import { getSupabase } from "@/lib/supabase";
+import { diaChile, fechaHoraChile } from "@/lib/hora-chile";
 import { espacioActivo } from "@/lib/espacio-admin";
 import type { RespuestaDetallada } from "@/lib/scoring";
 import { TEXTO_AVATAR, esAvatar, respuestaBifurcacion } from "@/content/preguntas";
@@ -107,7 +108,7 @@ export async function GET(request: Request) {
       d.id,
       d.codigo,
       d.origen,
-      d.fecha_creacion,
+      fechaHoraChile(d.fecha_creacion),
       d.estado_efectivo,
       d.es_prueba ? "si" : "no",
       d.nombre,
@@ -141,7 +142,7 @@ export async function GET(request: Request) {
 
   // BOM para que Excel abra los acentos correctamente.
   const csv = ["﻿" + COLUMNAS.join(","), ...filas].join("\r\n");
-  const fecha = new Date().toISOString().slice(0, 10);
+  const fecha = diaChile();
 
   return new NextResponse(csv, {
     headers: {

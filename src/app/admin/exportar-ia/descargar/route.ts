@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { esAdmin } from "@/lib/admin-auth";
+import { diaChile, inicioDelDiaChile } from "@/lib/hora-chile";
 import { getSupabase } from "@/lib/supabase";
 import { diagnosticosDemo } from "@/lib/demo-data";
 import { espacioActivo } from "@/lib/espacio-admin";
@@ -37,7 +38,9 @@ export async function GET(request: Request) {
   const rutaParam = params.get("ruta");
   const ruta = RUTAS.includes(rutaParam as Ruta) ? (rutaParam as Ruta) : null;
   const desdeParam = params.get("desde");
-  const desde = desdeParam && /^\d{4}-\d{2}-\d{2}$/.test(desdeParam) ? desdeParam : null;
+  // "Desde" es un día en Chile: empieza a medianoche de Chile, no de UTC.
+  const desde =
+    desdeParam && /^\d{4}-\d{2}-\d{2}$/.test(desdeParam) ? inicioDelDiaChile(desdeParam) : null;
   const formato = params.get("formato") === "jsonl" ? "jsonl" : "md";
   const incluirContacto = params.get("contacto") === "1";
   const incluirPruebas = params.get("pruebas") === "1";
@@ -75,11 +78,11 @@ export async function GET(request: Request) {
       (d) =>
         segmentos.includes(d.estado_efectivo as SegmentoIA) &&
         (!ruta || d.ruta === ruta) &&
-        (!desde || d.fecha_creacion >= desde)
+        (!desde || new Date(d.fecha_creacion) >= new Date(desde))
     );
   }
 
-  const fecha = new Date().toISOString().slice(0, 10);
+  const fecha = diaChile();
   const cuerpo =
     formato === "jsonl"
       ? exportarJsonl(filas, incluirContacto)

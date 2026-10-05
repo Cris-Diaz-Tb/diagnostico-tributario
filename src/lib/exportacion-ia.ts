@@ -1,3 +1,4 @@
+import { diaChile } from "@/lib/hora-chile";
 import {
   NOMBRE_RUTA,
   TEXTO_INTENCION,
@@ -100,7 +101,7 @@ function codigoDe(id: string): string {
 export function registroParaIA(fila: FilaIA, incluirContacto: boolean): RegistroIA {
   const registro: RegistroIA = {
     codigo: codigoDe(fila.id),
-    fecha: fila.fecha_creacion.slice(0, 10),
+    fecha: diaChile(fila.fecha_creacion),
     segmento: TEXTO_SEGMENTO[fila.estado_efectivo as SegmentoIA] ?? fila.estado_efectivo,
     es_prueba: Boolean(fila.es_prueba),
     propiedades: respuestaBifurcacion(fila.ruta, fila.propiedades_rango).respuesta,
