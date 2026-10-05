@@ -30,6 +30,8 @@ interface DatosResultado {
   identificador: string;
   /** Diagnóstico de un lanzamiento: el siguiente paso es el webinar. */
   esLanzamiento: boolean;
+  /** Id base de eventos de Meta de este diagnóstico (columna evento_id). */
+  eventoId: string | null;
 }
 
 async function datosDeToken(token: string): Promise<DatosResultado | null> {
@@ -41,7 +43,7 @@ async function datosDeToken(token: string): Promise<DatosResultado | null> {
     if (supabase) return null;
     const fase = token.split("-")[1] as FaseId;
     return FASES.includes(fase)
-      ? { fase, tag: null, identificador: token, esLanzamiento: false }
+      ? { fase, tag: null, identificador: token, esLanzamiento: false, eventoId: token }
       : null;
   }
 
@@ -49,7 +51,7 @@ async function datosDeToken(token: string): Promise<DatosResultado | null> {
 
   const { data } = await supabase
     .from("diagnosticos")
-    .select("id, fase, problema_principal, origen")
+    .select("id, fase, problema_principal, origen, evento_id")
     .eq("token_resultado", token)
     .maybeSingle();
 
@@ -59,6 +61,7 @@ async function datosDeToken(token: string): Promise<DatosResultado | null> {
     tag: data.problema_principal as string | null,
     identificador: data.id as string,
     esLanzamiento: Boolean(datosDeOrigen(data.origen).esLanzamiento),
+    eventoId: (data.evento_id as string | null) ?? null,
   };
 }
 
@@ -70,7 +73,7 @@ export default async function PaginaResultado({
   const { token } = await params;
   const datos = await datosDeToken(token);
   if (!datos) notFound();
-  const { fase, tag, identificador, esLanzamiento } = datos;
+  const { fase, tag, identificador, esLanzamiento, eventoId } = datos;
 
   const roadmap = ROADMAPS[fase];
   const ruta = fase[0] as Ruta;
@@ -88,7 +91,7 @@ export default async function PaginaResultado({
       outerClassName="flex-1"
       innerClassName="flex-1 flex flex-col items-center px-4 py-10"
     >
-      <TrackerResultado fase={fase} token={token} />
+      <TrackerResultado fase={fase} eventoId={eventoId} />
       <div className="w-full max-w-xl">
         <p className="mb-8 text-center text-xs font-semibold tracking-[0.2em] text-white/60 uppercase">
           {COPY.marca.nombre}

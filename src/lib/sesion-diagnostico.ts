@@ -42,33 +42,6 @@ function escribir(clave: string, valor: string): void {
   }
 }
 
-const CLAVE_COMPLETADO = "dd_completado_pendiente";
-
-type PropsCompletado = Record<string, string | number>;
-
-/**
- * El gate deja anotado que esta pestaña acaba de desbloquear su resultado.
- * La página del resultado lo consume una sola vez: así DiagnosticoCompletado
- * se dispara al llegar desde el gate y no cada vez que se abre el enlace
- * del correo.
- */
-export function marcarCompletadoPendiente(token: string, props: PropsCompletado): void {
-  escribir(CLAVE_COMPLETADO, JSON.stringify({ token, props }));
-}
-
-export function tomarCompletadoPendiente(token: string): PropsCompletado | null {
-  const crudo = leer(CLAVE_COMPLETADO);
-  if (!crudo) return null;
-  try {
-    const pendiente = JSON.parse(crudo) as { token: string; props: PropsCompletado };
-    if (pendiente.token !== token) return null;
-    sessionStorage.removeItem(CLAVE_COMPLETADO);
-    return pendiente.props;
-  } catch {
-    return null;
-  }
-}
-
 /** Id base de eventos de Meta, estable durante toda la sesión. */
 export function idBaseDeSesion(): string {
   const existente = leer(CLAVE_ID_BASE);

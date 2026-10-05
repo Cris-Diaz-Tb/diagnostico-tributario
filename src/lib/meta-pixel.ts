@@ -36,6 +36,21 @@ export function pixelId(): string | undefined {
   return idActivo;
 }
 
+/**
+ * Eventos disparados antes de que <MetaPixel /> resuelva el id (que puede
+ * venir de /api/config-publica). Sin esto, una página que dispara al
+ * cargar, como el resultado, perdía su evento. Si nunca hay pixel, se
+ * quedan aquí sin hacer nada.
+ */
+let pendientes: Array<() => void> = [];
+
+function listoOEnCola(enviar: () => void): boolean {
+  if (typeof window === "undefined") return false;
+  if (pixelId() && window.fbq) return true;
+  pendientes.push(enviar);
+  return false;
+}
+
 /** Carga el script del pixel una sola vez y dispara el PageView inicial. */
 export function iniciarPixel(id: string | undefined): void {
   if (!id || typeof window === "undefined" || window.fbq) return;
@@ -52,6 +67,8 @@ export function iniciarPixel(id: string | undefined): void {
   fbq.version = "2.0";
   window.fbq = fbq;
   window._fbq = fbq;
+  const enCola = pendientes;
+  pendientes = [];
 
   const script = document.createElement("script");
   script.async = true;
@@ -60,6 +77,7 @@ export function iniciarPixel(id: string | undefined): void {
 
   window.fbq("init", id);
   window.fbq("track", "PageView");
+  for (const enviar of enCola) enviar();
 }
 
 /**
@@ -71,14 +89,14 @@ export function trackPixel(
   idBase: string,
   propiedades?: Record<string, string | number | null | undefined>
 ): void {
-  if (!pixelId() || typeof window === "undefined" || !window.fbq) return;
+  if (!listoOEnCola(() => trackPixel(evento, idBase, propiedades))) return;
 
   const datos: Record<string, string | number> = {};
   for (const [clave, valor] of Object.entries(propiedades ?? {})) {
     if (valor !== null && valor !== undefined) datos[clave] = valor;
   }
 
-  window.fbq(
+  window.fbq!(
     EVENTOS_ESTANDAR.has(evento) ? "track" : "trackCustom",
     evento,
     datos,
@@ -94,6 +112,6 @@ export function trackPixelPersonalizado(
   evento: string,
   propiedades?: Record<string, string | number>
 ): void {
-  if (!pixelId() || typeof window === "undefined" || !window.fbq) return;
-  window.fbq("trackCustom", evento, propiedades ?? {});
+  if (!listoOEnCola(() => trackPixelPersonalizado(evento, propiedades))) return;
+  window.fbq!("trackCustom", evento, propiedades ?? {});
 }

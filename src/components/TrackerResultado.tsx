@@ -1,18 +1,31 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { trackEvento } from "@/lib/analytics";
 import { trackPixel } from "@/lib/meta-pixel";
-import { idBaseDeSesion, tomarCompletadoPendiente } from "@/lib/sesion-diagnostico";
 import type { FaseId } from "@/content/tipos";
 
-export function TrackerResultado({ fase, token }: { fase: FaseId; token: string }) {
+/**
+ * Llegar a esta página es haber dejado los datos y ver el diagnóstico
+ * completo: cada visita dispara DiagnosticoCompletado. El event_id sale
+ * del diagnóstico (no de la pestaña), así que es el mismo que manda el
+ * servidor al capturar el correo y el mismo en cada visita: Meta los une
+ * y no lo cuenta doble.
+ */
+export function TrackerResultado({
+  fase,
+  eventoId,
+}: {
+  fase: FaseId;
+  eventoId: string | null;
+}) {
+  // Una vez por carga, aunque React monte el efecto dos veces.
+  const enviado = useRef(false);
   useEffect(() => {
+    if (enviado.current) return;
+    enviado.current = true;
     trackEvento("resultado_visitado", { fase });
-    // Solo la primera llegada desde el gate; el servidor manda el mismo
-    // event_id al capturar el correo y Meta los une.
-    const completado = tomarCompletadoPendiente(token);
-    if (completado) trackPixel("DiagnosticoCompletado", idBaseDeSesion(), completado);
-  }, [fase, token]);
+    if (eventoId) trackPixel("DiagnosticoCompletado", eventoId, { fase });
+  }, [fase, eventoId]);
   return null;
 }

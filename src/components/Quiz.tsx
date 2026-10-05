@@ -21,7 +21,8 @@ import {
   idBaseDeSesion,
   progresoPendiente,
   registrarProgreso,
-  sesionIdGuardado, marcarCompletadoPendiente } from "@/lib/sesion-diagnostico";
+  sesionIdGuardado,
+} from "@/lib/sesion-diagnostico";
 import { BadgePlaceholder } from "@/components/BadgePlaceholder";
 import { BrandBackdrop } from "@/components/brand/BrandBackdrop";
 
@@ -408,11 +409,6 @@ function GateResultado({
       trackEvento("email_capturado", { fase: resultado.fase });
       // Evento estándar de Meta: el que optimizan las campañas.
       trackPixel("Lead", idBase, { fase: resultado.fase, score: resultado.score });
-      // DiagnosticoCompletado se dispara al llegar al resultado.
-      marcarCompletadoPendiente(data.token, {
-        fase: resultado.fase,
-        score: resultado.score,
-      });
       onExito(data.token);
     } catch {
       setError(COPY.errores.generico);

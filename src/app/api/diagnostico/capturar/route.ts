@@ -93,7 +93,7 @@ export async function POST(request: Request) {
     })
     .eq("id", body.id)
     .select(
-      `${COLUMNAS_LEAD}, fbp, fbc, client_ip, user_agent, utm_source, utm_campaign, utm_content`
+      `${COLUMNAS_LEAD}, evento_id, fbp, fbc, client_ip, user_agent, utm_source, utm_campaign, utm_content`
     )
     .single();
 
@@ -134,10 +134,11 @@ export async function POST(request: Request) {
     // `Lead` es el evento estándar a optimizar en las campañas de Meta.
     enviarEventoCapi({ evento: "Lead", idBase: body.idBase, persona, propiedades, urlOrigen }),
     // Desbloqueó su diagnóstico completo. El pixel manda el mismo event_id
-    // al llegar a la página del resultado y Meta los cuenta una vez.
+    // (el evento_id guardado del diagnóstico) en cada visita al resultado,
+    // y Meta los cuenta una vez.
     enviarEventoCapi({
       evento: "DiagnosticoCompletado",
-      idBase: body.idBase,
+      idBase: (data.evento_id as string | null) ?? body.idBase,
       persona,
       propiedades,
       urlOrigen,
