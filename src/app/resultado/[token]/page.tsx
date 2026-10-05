@@ -88,7 +88,7 @@ export default async function PaginaResultado({
       outerClassName="flex-1"
       innerClassName="flex-1 flex flex-col items-center px-4 py-10"
     >
-      <TrackerResultado fase={fase} />
+      <TrackerResultado fase={fase} token={token} />
       <div className="w-full max-w-xl">
         <p className="mb-8 text-center text-xs font-semibold tracking-[0.2em] text-white/60 uppercase">
           {COPY.marca.nombre}

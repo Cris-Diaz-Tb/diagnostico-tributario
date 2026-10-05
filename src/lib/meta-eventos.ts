@@ -9,6 +9,9 @@ export type EventoMeta =
   | "Lead"
   /** Personalizados: apoyo para audiencias y análisis del embudo. */
   | "DiagnosticoIniciado"
+  /** Respondió todo y llegó al gate, pero aún no deja sus datos. */
+  | "DiagnosticoIncompleto"
+  /** Dejó sus datos y vio el diagnóstico completo. */
   | "DiagnosticoCompletado"
   | "DiagnosticoAbandonado";
 

@@ -87,10 +87,11 @@ describe("deduplicación pixel ↔ API de Conversiones", () => {
     const ids = new Set([
       idDeEvento(base, "Lead"),
       idDeEvento(base, "DiagnosticoIniciado"),
+      idDeEvento(base, "DiagnosticoIncompleto"),
       idDeEvento(base, "DiagnosticoCompletado"),
       idDeEvento(base, "DiagnosticoAbandonado"),
     ]);
-    expect(ids.size).toBe(4);
+    expect(ids.size).toBe(5);
   });
 
   it("cada sesión tiene su propio id base", () => {

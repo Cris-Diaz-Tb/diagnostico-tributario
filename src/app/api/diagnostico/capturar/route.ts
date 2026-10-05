@@ -104,37 +104,43 @@ export async function POST(request: Request) {
 
   const lead = await leadDesdeFila(data as unknown as FilaLead);
 
+  // Datos de contacto hasheados: suben la calidad de coincidencia y
+  // permiten atribuir el evento al anuncio exacto.
+  const persona = {
+    email: body.email,
+    telefono: body.telefono,
+    nombre: body.nombre,
+    fbp: data.fbp as string | null,
+    fbc: data.fbc as string | null,
+    ip: (data.client_ip as string | null) ?? ipDePeticion(request),
+    userAgent: (data.user_agent as string | null) ?? request.headers.get("user-agent"),
+  };
+  const propiedades = {
+    origen: data.origen as string,
+    ruta: data.ruta as string,
+    propiedades_rango: data.propiedades_rango,
+    fase: data.fase as string,
+    score: data.score_numerico as number,
+    problema_principal: data.problema_principal as string | null,
+    utm_source: data.utm_source as string | null,
+    utm_campaign: data.utm_campaign as string | null,
+    utm_content: data.utm_content as string | null,
+  };
+  const urlOrigen = request.headers.get("referer");
+
   // Email, CRM y Meta son secundarios al flujo: si fallan, la persona igual
   // ve su resultado en pantalla y el lead ya está en Supabase (queda log).
   await Promise.all([
     // `Lead` es el evento estándar a optimizar en las campañas de Meta.
-    // Va con los datos de contacto hasheados, que es lo que sube la
-    // calidad de coincidencia y permite atribuirlo al anuncio exacto.
+    enviarEventoCapi({ evento: "Lead", idBase: body.idBase, persona, propiedades, urlOrigen }),
+    // Desbloqueó su diagnóstico completo. El pixel manda el mismo event_id
+    // al llegar a la página del resultado y Meta los cuenta una vez.
     enviarEventoCapi({
-      evento: "Lead",
+      evento: "DiagnosticoCompletado",
       idBase: body.idBase,
-      persona: {
-        email: body.email,
-        telefono: body.telefono,
-        nombre: body.nombre,
-        fbp: data.fbp as string | null,
-        fbc: data.fbc as string | null,
-        ip: (data.client_ip as string | null) ?? ipDePeticion(request),
-        userAgent:
-          (data.user_agent as string | null) ?? request.headers.get("user-agent"),
-      },
-      propiedades: {
-        origen: data.origen as string,
-        ruta: data.ruta as string,
-        propiedades_rango: data.propiedades_rango,
-        fase: data.fase as string,
-        score: data.score_numerico as number,
-        problema_principal: data.problema_principal as string | null,
-        utm_source: data.utm_source as string | null,
-        utm_campaign: data.utm_campaign as string | null,
-        utm_content: data.utm_content as string | null,
-      },
-      urlOrigen: request.headers.get("referer"),
+      persona,
+      propiedades,
+      urlOrigen,
     }),
     enviarRoadmapPorEmail({
       para: body.email,

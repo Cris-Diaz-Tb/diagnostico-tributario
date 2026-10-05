@@ -185,7 +185,8 @@ export async function POST(request: Request) {
   }
 
   await enviarEventoCapi({
-    evento: "DiagnosticoCompletado",
+    // Llegó al gate: todavía no ve su diagnóstico completo.
+    evento: "DiagnosticoIncompleto",
     idBase: body.idBase,
     persona: {
       fbp: fila.fbp ?? body.meta?.fbp,

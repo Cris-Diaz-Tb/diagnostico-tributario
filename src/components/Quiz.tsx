@@ -21,8 +21,7 @@ import {
   idBaseDeSesion,
   progresoPendiente,
   registrarProgreso,
-  sesionIdGuardado,
-} from "@/lib/sesion-diagnostico";
+  sesionIdGuardado, marcarCompletadoPendiente } from "@/lib/sesion-diagnostico";
 import { BadgePlaceholder } from "@/components/BadgePlaceholder";
 import { BrandBackdrop } from "@/components/brand/BrandBackdrop";
 
@@ -213,7 +212,7 @@ export function Quiz({ origen = ORIGEN_DIRECTO }: { origen?: OrigenId } = {}) {
         fase: data.fase,
         score: data.score,
       });
-      trackPixel("DiagnosticoCompletado", idBase, {
+      trackPixel("DiagnosticoIncompleto", idBase, {
         ruta: ruta ?? "",
         fase: data.fase,
         score: data.score,
@@ -409,6 +408,11 @@ function GateResultado({
       trackEvento("email_capturado", { fase: resultado.fase });
       // Evento estándar de Meta: el que optimizan las campañas.
       trackPixel("Lead", idBase, { fase: resultado.fase, score: resultado.score });
+      // DiagnosticoCompletado se dispara al llegar al resultado.
+      marcarCompletadoPendiente(data.token, {
+        fase: resultado.fase,
+        score: resultado.score,
+      });
       onExito(data.token);
     } catch {
       setError(COPY.errores.generico);
