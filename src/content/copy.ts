@@ -123,6 +123,134 @@ export const COPY = {
       "Te enviaremos el enlace del webinar a tu correo y a tu WhatsApp.",
   },
 
+  /**
+   * Landing larga (entrada /descubre) para tráfico frío de anuncios.
+   * Estructura de quiz-funnel: gancho → las 3 etapas → los 3 errores en
+   * voz de Cris → qué recibes → para quién → preguntas. Todo lleva a
+   * /diagnostico. Pendiente de aprobación de Cris.
+   */
+  landingEtapas: {
+    status: "placeholder" as "placeholder" | "aprobado",
+    etiqueta: "Diagnóstico gratuito · 2 minutos",
+    titulo:
+      "Aunque tus propiedades rindan, podrías estar pagando más impuesto del que la ley exige",
+    subtitulo:
+      "Todo inversionista inmobiliario pasa por 3 etapas con sus impuestos. Descubre en cuál estás y qué hacer esta semana para pagar lo que corresponde, no más.",
+    boton: "Descubrir mi etapa gratis",
+    nota: "Sin registro previo · Tus respuestas son confidenciales",
+
+    etapasTitulo: "Las 3 etapas de un patrimonio inmobiliario",
+    etapasIntro:
+      "Tu etapa no depende de cuántas propiedades tengas, sino de cómo están declaradas y estructuradas. Saber en cuál estás te dice qué hacer primero.",
+    etapas: [
+      {
+        nombre: "Pagas a ciegas",
+        texto:
+          "Declaras tus arriendos como te dicen, sin tener claro bajo qué régimen ni qué gastos podrías restar. Cada propiedad nueva repite el problema.",
+      },
+      {
+        nombre: "Ordenas, pero sin estructura",
+        texto:
+          "Ya declaras y usas algunos beneficios, pero tus propiedades están a tu nombre o mezcladas con tu negocio sin un criterio claro.",
+      },
+      {
+        nombre: "Estructuras y proteges",
+        texto:
+          "Cada propiedad está donde conviene, piensas el impuesto antes de comprar y tienes un plan para lo que heredará tu familia.",
+      },
+    ],
+    etapasCierre:
+      "El diagnóstico te ubica en una de estas etapas según tu número de propiedades y tus respuestas.",
+
+    autorSaludo: "Hola, soy Cris",
+    autorIntro:
+      "Llevo más de 14 años asesorando a inversionistas inmobiliarios en Chile. Creé este diagnóstico porque veo los mismos tres errores una y otra vez, en personas con 2 propiedades y en personas con 30.",
+    errores: [
+      {
+        titulo: "Restar menos gastos de los que la ley permite",
+        texto:
+          "Intereses del crédito, contribuciones, gastos comunes: la mayoría deja al menos uno fuera, y ese impuesto pagado de más no se recupera solo.",
+      },
+      {
+        titulo: "Tener todo a tu nombre, o todo mezclado con tu negocio",
+        texto:
+          "Sin un criterio claro, cada propiedad nueva suma impuesto y exposición en lugar de sumar patrimonio protegido.",
+      },
+      {
+        titulo: "Comprar primero y pensar el impuesto después",
+        texto:
+          "El efecto tributario de una compra se decide antes de firmar, no en la declaración de renta del año siguiente.",
+      },
+    ],
+    autorCierre:
+      "No es falta de conocimiento: nadie te enseñó a mirar tus propiedades con ojo tributario, solo con ojo inmobiliario. El diagnóstico te muestra cuál de estos errores te está costando más.",
+    botonMedio: "Quiero saber en qué etapa estoy",
+
+    recibesTitulo: "Al terminar recibes tu diagnóstico escrito",
+    recibes: [
+      "Tu etapa, de 1 a 3, dentro de tu perfil de inversionista.",
+      "Un diagnóstico de tu situación, en palabras simples.",
+      "3 pasos concretos para aplicar esta semana, sin contratar nada.",
+      "Una copia en tu correo para volver a ella cuando quieras.",
+    ],
+    ejemploEtiqueta: "Ejemplo de resultado",
+    ejemploFase: "Inversionista inicial · Etapa 2 de 3",
+    ejemploTitulo: "Vas ordenando, pero expones tu patrimonio",
+    ejemploTexto:
+      "Ya declaras tus arriendos y usas algunos beneficios, así que no partes de cero. El problema es que lo haces sin una estructura…",
+
+    perfilesTitulo: "Las preguntas se adaptan a tu caso",
+    perfilesIntro:
+      "La primera pregunta es cuántas propiedades tienes. Desde ahí, el diagnóstico sigue el camino de tu perfil.",
+    perfiles: [
+      {
+        rango: "1 a 4 propiedades",
+        nombre: "Inversionista inicial",
+        texto: "Cómo declaras tus arriendos y qué gastos podrías estar dejando fuera.",
+      },
+      {
+        rango: "5 a 15 propiedades",
+        nombre: "Inversionista intermedio",
+        texto: "Cómo separar tus propiedades del riesgo de tu negocio y aprovechar beneficios.",
+      },
+      {
+        rango: "16 o más",
+        nombre: "Inversionista consolidado",
+        texto: "Cómo mirar tu patrimonio como un todo, incluida la herencia.",
+      },
+    ],
+
+    pasosTitulo: "Cómo funciona",
+    pasos: [
+      "Respondes unas 10 preguntas de opción múltiple. Toma 2 minutos.",
+      "Ves tu etapa y el diagnóstico de tu situación.",
+      "Dejas tu nombre, correo y WhatsApp y desbloqueas tus 3 pasos.",
+    ],
+
+    faqTitulo: "Preguntas frecuentes",
+    faq: [
+      {
+        p: "¿Tiene algún costo?",
+        r: "No. El diagnóstico es gratuito.",
+      },
+      {
+        p: "¿Tengo que registrarme?",
+        r: "No para empezar. Al final, para mostrarte tus 3 pasos y enviártelos, te pedimos tu nombre, correo y WhatsApp.",
+      },
+      {
+        p: "¿Sirve si tengo una sola propiedad?",
+        r: "Sí. Desde la primera propiedad arrendada conviene saber bajo qué régimen declaras y qué gastos puedes restar.",
+      },
+      {
+        p: "¿Reemplaza a mi contador?",
+        r: "No. Es orientativo y se basa solo en tus respuestas. Te sirve para saber qué revisar y qué preguntar, más allá de la declaración de cada año.",
+      },
+    ],
+
+    cierreTitulo: "Descubre en qué etapa está tu patrimonio inmobiliario",
+    cierreTexto: "Son 2 minutos y sales con 3 pasos concretos para esta semana.",
+  },
+
   whatsapp: {
     boton: "Prefiero consultar por WhatsApp",
     nota: "Te respondemos con tu diagnóstico a la vista.",
