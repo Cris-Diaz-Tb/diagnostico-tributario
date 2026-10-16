@@ -102,7 +102,7 @@ export const COPY = {
   },
 
   /**
-   * Lanzamiento (entrada /lanzamiento). Mismo diagnóstico; cambian la
+   * Lanzamiento (entrada /brecha-estructural). Mismo diagnóstico; cambian la
    * portada y el siguiente paso del resultado, que invita al webinar.
    */
   lanzamiento: {

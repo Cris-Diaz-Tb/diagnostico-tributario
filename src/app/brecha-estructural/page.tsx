@@ -5,7 +5,7 @@ export default function PortadaLanzamiento() {
   return (
     <Portada
       textos={{ ...COPY.landing, ...COPY.lanzamiento }}
-      hrefDiagnostico="/lanzamiento/diagnostico"
+      hrefDiagnostico="/brecha-estructural/diagnostico"
     />
   );
 }

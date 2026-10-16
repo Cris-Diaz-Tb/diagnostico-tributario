@@ -243,7 +243,7 @@ export default async function PaginaConfiguracion({
             <h2 className="font-display text-xl text-white">Webinar del lanzamiento</h2>
             <p className="mt-1 text-sm text-white/55 leading-relaxed">
               Solo para los diagnósticos que entran por{" "}
-              <code className="text-white/70">/lanzamiento</code>. Su resultado
+              <code className="text-white/70">/brecha-estructural</code>. Su resultado
               invita al webinar en vez de agendar la asesoría, y este es el enlace
               del botón. Vacío = el resultado muestra la invitación sin botón.
             </p>

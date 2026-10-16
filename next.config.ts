@@ -36,6 +36,19 @@ const headersSeguridad = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  async redirects() {
+    // La entrada del lanzamiento se llamaba /lanzamiento; el link viejo ya
+    // circuló, así que sigue llevando al nuevo (con sus UTMs). Temporal
+    // (307) para poder cambiar el slug otra vez sin caché del navegador.
+    return [
+      { source: "/lanzamiento", destination: "/brecha-estructural", permanent: false },
+      {
+        source: "/lanzamiento/:path*",
+        destination: "/brecha-estructural/:path*",
+        permanent: false,
+      },
+    ];
+  },
   async headers() {
     return [
       {
