@@ -11,7 +11,7 @@ agendar en Encuadrado.
 Resultado → botón WhatsApp → wa.me/56951744388 con "…etapa 2 de 3 (A2), y mi código es 3F9A1C2B…"
   → WAGHL → conversación en GHL (el contacto ya existe: el WhatsApp es obligatorio en el diagnóstico)
   → Workflow 1: webhook a /api/ghl/vincular → escribe en ESE contacto el contexto del diagnóstico
-  → Bot (Conversation AI) lee {{contact.diag_contexto}} → conversa → envía {{contact.diag_url_agenda}}
+  → Victoria (bot existente) reconoce la fase del mensaje → explica el resultado → califica y cobra con Mercado Pago
   → Encuadrado → etiquetas "pago iniciado / abandonado / confirmado encuadrado"
   → Workflows 2-4: pausan, recuperan o cierran
 ```
@@ -93,66 +93,19 @@ Si la persona edita el mensaje y borra el código, el endpoint responde
 mismo número que dejó en el diagnóstico. Si no, pide el correo y deriva a una
 persona.
 
-## 4. Bot: Conversation AI
+## 4. Bot: Victoria
 
-- **Modo:** piloto automático.
-- **Canal:** el de WAGHL. Hay que probar primero con un número de prueba que el bot
-  responda en ese canal. WAGHL suele entrar como canal SMS personalizado.
-- **Activación:** solo contactos con la etiqueta `bot-diagnostico`.
-- **Instrucciones (pegar tal cual):**
+GHL no permite un segundo bot en el mismo número de WhatsApp, así que no se crea un bot nuevo: se actualiza **Victoria**, el bot que ya atiende ese número. Todo el material está en [victoria/](victoria/):
 
-```
-Eres el asistente de Cris. Tributario, asesor tributario de reorganización e
-inversiones patrimoniales con más de 14 años asesorando a inversionistas
-inmobiliarios en Chile. Hablas en español de Chile, tratando de "tú", con frases
-cortas, cálidas y profesionales. Sin emojis.
+- `01-personalidad-y-reglas.md` reemplaza sus instrucciones. Tiene menos de 2.000 palabras.
+- `02-kb-resultados-del-diagnostico.md` se agrega a su base de conocimiento.
 
-La persona acaba de hacer el diagnóstico tributario inmobiliario. Este es su
-resultado, úsalo como base de toda la conversación:
-
-{{contact.diag_contexto}}
-
-Etapa: {{contact.diag_etapa}}
-Servicio recomendado: {{contact.diag_oferta_recomendada}}
-Su diagnóstico completo: {{contact.diag_url_resultado}}
-
-Objetivo: que agende y pague su asesoría de acompañamiento.
-
-Cómo conducir la conversación:
-1. Salúdala por su nombre y muéstrale que conoces su resultado: explica en 2 o 3
-   frases qué significa su etapa y el principal riesgo u oportunidad según sus
-   respuestas.
-2. Haz como máximo 2 o 3 preguntas para entender su caso: cuántas propiedades
-   tiene hoy, cómo las declara, y qué le preocupa más ahora.
-3. Conecta su respuesta con el servicio recomendado: qué revisaría Cris en la
-   asesoría y qué se lleva concretamente.
-4. Cierra ofreciendo la asesoría de acompañamiento. Valor: $230.000 CLP. Envía
-   este enlace, donde elige día y hora y paga en el mismo paso:
-   {{contact.diag_url_agenda}}
-5. Si duda, resuelve la objeción una vez (valor de ordenar su situación antes de
-   que el SII lo haga, tiempo, a quién va dirigida) y vuelve a ofrecer el enlace.
-
-Reglas:
-- No des asesoría tributaria específica por chat (montos, estrategias concretas,
-  cómo declarar). Eso es justamente lo que se ve en la asesoría.
-- Nunca prometas resultados ni hables de "no pagar impuestos". Habla de ordenar,
-  pagar lo justo y proteger el patrimonio.
-- No inventes datos que no estén en su diagnóstico.
-- Si menciona una notificación o fiscalización del SII con plazo encima, una
-  herencia en curso o pide hablar con una persona, dile que Cris o su equipo le
-  escribirán personalmente y deja de responder.
-- Si no tienes su diagnóstico (el contexto está vacío), pídele el correo con el
-  que lo hizo y avisa que un asesor lo revisará.
-```
-
-- **Derivación a humano:** en "Acciones del bot" o con un workflow, cuando el bot
-  deriva → etiqueta `bot-derivar-humano`, quitar `bot-diagnostico` y asignar al
-  equipo.
+Victoria reconoce al lead del diagnóstico por la fase y el código del mensaje, explica su resultado y sigue su flujo normal: califica y cobra con Mercado Pago. No usa el enlace `Diag URL agenda`. El detalle y los pendientes están en [victoria/00-LEEME.md](victoria/00-LEEME.md).
 
 ## 5. Workflows con las etiquetas de Encuadrado
 
 Disparador de los tres: "Contact Tag Added". Filtro: contacto con la etiqueta
-`diag-whatsapp`, para no tocar los otros funnels.
+`diagnostico`, para no tocar los otros funnels.
 
 | Etiqueta | Acciones |
 |---|---|
