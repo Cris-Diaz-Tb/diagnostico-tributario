@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { z } from "zod";
 import { calcularResultado, RespuestasInvalidasError } from "@/lib/scoring";
 import { preguntasDeRuta, rangoDePropiedades, VERSION_CUESTIONARIO } from "@/content/preguntas";
@@ -8,6 +8,7 @@ import { generarToken } from "@/lib/token";
 import { getSupabase } from "@/lib/supabase";
 import { enviarEventoCapi } from "@/lib/meta-capi";
 import { ipDePeticion, permitirPeticion } from "@/lib/ratelimit";
+import { enviarWebhookDatos } from "@/lib/webhook-datos";
 
 const bodySchema = z.object({
   /** Espacio de datos; solo se usa si la fila se crea aquí. */
@@ -208,6 +209,9 @@ export async function POST(request: Request) {
     },
     urlOrigen: request.headers.get("referer"),
   });
+
+  const idFila = fila.id;
+  after(() => enviarWebhookDatos("diagnostico.incompleto", { id: idFila }));
 
   return NextResponse.json({
     id: fila.id,

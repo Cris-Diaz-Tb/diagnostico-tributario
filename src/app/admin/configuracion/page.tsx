@@ -11,7 +11,7 @@ import {
 import { URL_AGENDA } from "@/lib/agenda";
 import { modoDemo } from "@/lib/supabase";
 import { Marco } from "../ui";
-import { guardarConfigAdmin, probarMetaAdmin } from "./actions";
+import { guardarConfigAdmin, probarMetaAdmin, probarWebhookAdmin } from "./actions";
 
 export const metadata = { title: "Configuración | Cris. Tributario" };
 export const viewport: Viewport = { themeColor: "#0A0F16" };
@@ -83,6 +83,7 @@ export default async function PaginaConfiguracion({
     guardado?: string;
     error?: string;
     prueba?: string;
+    webhook?: string;
     detalle?: string;
   }>;
 }) {
@@ -116,6 +117,18 @@ export default async function PaginaConfiguracion({
           }`}
         >
           {params.prueba === "ok" ? "Conexión con Meta correcta. " : "La conexión con Meta falló. "}
+          {params.detalle}
+        </p>
+      )}
+      {params.webhook && (
+        <p
+          className={`mb-5 rounded-xl border px-4 py-3 text-sm ${
+            params.webhook === "ok"
+              ? "border-emerald-400/25 bg-emerald-400/10 text-emerald-300"
+              : "border-red-400/25 bg-red-400/10 text-red-300"
+          }`}
+        >
+          {params.webhook === "ok" ? "Webhook correcto. " : "El webhook falló. "}
           {params.detalle}
         </p>
       )}
@@ -260,6 +273,30 @@ export default async function PaginaConfiguracion({
           </Campo>
         </section>
 
+        <section className="brand-glass rounded-2xl p-5 sm:p-6 space-y-5">
+          <div>
+            <h2 className="font-display text-xl text-white">Webhook de datos (n8n / Make)</h2>
+            <p className="mt-1 text-sm text-white/55 leading-relaxed">
+              Cada diagnóstico se envía a esta URL cuando llega al gate, cuando deja
+              sus datos, cuando toca el botón del resultado y cuando se marca como
+              abandonado. Van el diagnóstico directo y los lanzamientos: el campo{" "}
+              <code className="text-white/70">origen</code> dice de cuál es. Incluye
+              nombre, email y teléfono. El histórico se reenvía desde Exportar para IA.
+              Vacío = no se envía nada.
+            </p>
+          </div>
+
+          <Campo
+            nombre="webhook_datos_url"
+            etiqueta="URL del webhook"
+            ayuda="El Production URL del nodo Webhook de n8n, o el del módulo Webhooks de Make. Si está WEBHOOK_DATOS_SECRET en Vercel, llega en el header x-webhook-secret."
+            valor={config.webhook_datos_url}
+            placeholder={valorDeEntorno("webhook_datos_url") ?? "https://..."}
+          >
+            <Origen clave="webhook_datos_url" textoSinConfigurar="Sin envíos" />
+          </Campo>
+        </section>
+
         <div className="flex flex-wrap items-center gap-3">
           <button
             type="submit"
@@ -274,6 +311,13 @@ export default async function PaginaConfiguracion({
             className="rounded-2xl border border-white/15 bg-white/5 px-5 py-3 text-sm text-white/75 hover:border-[var(--brand-accent)]/40 hover:text-white transition"
           >
             Probar conexión con Meta
+          </button>
+          <button
+            type="submit"
+            formAction={probarWebhookAdmin}
+            className="rounded-2xl border border-white/15 bg-white/5 px-5 py-3 text-sm text-white/75 hover:border-[var(--brand-accent)]/40 hover:text-white transition"
+          >
+            Enviar prueba al webhook
           </button>
         </div>
       </form>

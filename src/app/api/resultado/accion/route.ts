@@ -1,7 +1,8 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { getSupabase } from "@/lib/supabase";
 import { esAccionResultado } from "@/lib/accion-resultado";
 import { ipDePeticion, permitirPeticion } from "@/lib/ratelimit";
+import { enviarWebhookDatos } from "@/lib/webhook-datos";
 
 /**
  * Registra el último botón que tocó el lead en la página de resultado.
@@ -42,5 +43,6 @@ export async function POST(request: Request) {
     console.error("[resultado/accion] Error guardando la acción:", error);
     return NextResponse.json({ error: "Error de base de datos" }, { status: 500 });
   }
+  after(() => enviarWebhookDatos("diagnostico.accion", { token }));
   return NextResponse.json({ registrado: true });
 }

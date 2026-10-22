@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { z } from "zod";
 import { getSupabase } from "@/lib/supabase";
 import { enviarRoadmapPorEmail } from "@/lib/email";
@@ -8,6 +8,7 @@ import { FASES } from "@/content/roadmaps";
 import { enviarEventoCapi } from "@/lib/meta-capi";
 import { generarToken } from "@/lib/token";
 import { ipDePeticion, permitirPeticion } from "@/lib/ratelimit";
+import { enviarWebhookDatos } from "@/lib/webhook-datos";
 import { telefonoValido } from "@/lib/telefono";
 import { datosDeOrigen } from "@/content/origenes";
 import type { FaseId } from "@/content/tipos";
@@ -156,6 +157,8 @@ export async function POST(request: Request) {
     }),
     sincronizarLeadConCrm(lead),
   ]);
+
+  after(() => enviarWebhookDatos("diagnostico.completado", { id: body.id }));
 
   return NextResponse.json({ token: data.token_resultado });
 }

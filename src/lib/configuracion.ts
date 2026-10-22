@@ -19,7 +19,8 @@ export type ClaveConfig =
   | "meta_api_version"
   | "url_asesoria"
   | "whatsapp_numero"
-  | "url_webinar";
+  | "url_webinar"
+  | "webhook_datos_url";
 
 export const CLAVES: ClaveConfig[] = [
   "meta_pixel_id",
@@ -29,6 +30,7 @@ export const CLAVES: ClaveConfig[] = [
   "url_asesoria",
   "whatsapp_numero",
   "url_webinar",
+  "webhook_datos_url",
 ];
 
 /** Variable de entorno que respalda a cada clave. */
@@ -40,6 +42,7 @@ const ENV_DE_CLAVE: Record<ClaveConfig, string[]> = {
   url_asesoria: ["NEXT_PUBLIC_URL_ASESORIA"],
   whatsapp_numero: ["WHATSAPP_NUMERO"],
   url_webinar: ["NEXT_PUBLIC_URL_WEBINAR"],
+  webhook_datos_url: ["WEBHOOK_DATOS_URL"],
 };
 
 export type Configuracion = Partial<Record<ClaveConfig, string>>;

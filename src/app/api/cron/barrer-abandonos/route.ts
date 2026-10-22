@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase";
 import { enviarEventoCapi } from "@/lib/meta-capi";
+import { enviarWebhookDatos } from "@/lib/webhook-datos";
 
 /**
  * Barrido de diagnósticos abandonados.
@@ -60,6 +61,7 @@ export async function GET(request: Request) {
 
   let enviados = 0;
   let vencidos = 0;
+  let webhooks = 0;
 
   for (const fila of abandonados ?? []) {
     const momento = new Date(fila.ultima_actividad_at as string);
@@ -105,6 +107,11 @@ export async function GET(request: Request) {
       .from("diagnosticos")
       .update({ capi_abandono_at: new Date().toISOString() })
       .eq("id", fila.id);
+
+    // Va con la misma marca que el abandono de Meta: así sale una sola vez.
+    if (await enviarWebhookDatos("diagnostico.abandonado", { id: fila.id as string })) {
+      webhooks += 1;
+    }
   }
 
   // Purga de retención: diagnósticos abandonados que nunca dejaron contacto.
@@ -123,5 +130,6 @@ export async function GET(request: Request) {
     enviados,
     vencidos,
     purgados: purgados ?? 0,
+    webhooks,
   });
 }

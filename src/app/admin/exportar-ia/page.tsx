@@ -41,13 +41,41 @@ async function contarSegmentos(espacio: OrigenId): Promise<Record<SegmentoIA, nu
   return conteo;
 }
 
-export default async function PaginaExportarIa() {
+const AVISO_WEBHOOK: Record<string, { texto: string; ok: boolean }> = {
+  ok: { texto: "Histórico enviado al webhook.", ok: true },
+  parcial: { texto: "Histórico enviado, pero algunos no llegaron. Revisa el flujo y vuelve a enviar.", ok: false },
+  sin_url: { texto: "Falta la URL del webhook en Configuración.", ok: false },
+  sin_bd: { texto: "Sin base de datos conectada no hay histórico que enviar.", ok: false },
+  error: { texto: "No se pudo leer el histórico. Revisa los logs.", ok: false },
+};
+
+export default async function PaginaExportarIa({
+  searchParams,
+}: {
+  searchParams: Promise<{ webhook?: string; enviados?: string; fallidos?: string }>;
+}) {
   if (!(await esAdmin())) redirect("/admin/login");
 
+  const params = await searchParams;
+  const aviso = params.webhook ? AVISO_WEBHOOK[params.webhook] : undefined;
   const conteo = await contarSegmentos(await espacioActivo());
 
   return (
     <Marco usandoDemo={!getSupabase()} activa="/admin/exportar-ia">
+      {aviso && (
+        <p
+          className={`mb-5 rounded-xl border px-4 py-3 text-sm ${
+            aviso.ok
+              ? "border-emerald-400/25 bg-emerald-400/10 text-emerald-300"
+              : "border-red-400/25 bg-red-400/10 text-red-300"
+          }`}
+        >
+          {aviso.texto}
+          {params.enviados && ` Llegaron ${params.enviados}`}
+          {params.fallidos && params.fallidos !== "0" && `, fallaron ${params.fallidos}`}
+          {params.enviados && "."}
+        </p>
+      )}
       <div className="grid grid-cols-2 gap-3 mb-6">
         <Contador etiqueta="Completaron y dejaron datos" valor={String(conteo.capturado)} matiz="bueno" />
         <Contador
@@ -170,6 +198,37 @@ export default async function PaginaExportarIa() {
 
           <button className="rounded-full border border-[var(--brand-accent)]/40 bg-[var(--brand-accent)]/10 px-5 py-2 text-sm text-[var(--brand-accent-light)] hover:bg-[var(--brand-accent)]/20 transition">
             ↓ Descargar archivo
+          </button>
+        </section>
+      </form>
+
+      <form action="/admin/exportar-ia/webhook" method="post" className="mt-6">
+        <section className="brand-glass rounded-2xl p-5 sm:p-6 space-y-5">
+          <div>
+            <h2 className="font-display text-xl text-white">Enviar histórico al webhook</h2>
+            <p className="mt-1 text-sm text-white/55 leading-relaxed">
+              Manda a n8n o Make todos los diagnósticos de este espacio, uno por envío,
+              con <code className="text-white/70">evento: diagnostico.historico</code>.
+              Incluye los abandonos y los datos de contacto. Úsalo para la carga
+              inicial o si el flujo estuvo caído: si mandas dos veces, usa el{" "}
+              <code className="text-white/70">id</code> para no duplicar.
+            </p>
+          </div>
+          <label className="block sm:max-w-xs">
+            <span className="text-sm font-medium text-white/85">Desde (opcional)</span>
+            <input type="date" name="desde" className={`${CLASE_CAMPO} [color-scheme:dark]`} />
+          </label>
+          <label className="flex items-start gap-2 text-sm text-white/75">
+            <input
+              type="checkbox"
+              name="pruebas"
+              value="1"
+              className="mt-0.5 h-4 w-4 accent-[var(--brand-accent)]"
+            />
+            <span>Incluir pruebas internas</span>
+          </label>
+          <button className="rounded-full border border-[var(--brand-accent)]/40 bg-[var(--brand-accent)]/10 px-5 py-2 text-sm text-[var(--brand-accent-light)] hover:bg-[var(--brand-accent)]/20 transition">
+            ↗ Enviar histórico
           </button>
         </section>
       </form>
