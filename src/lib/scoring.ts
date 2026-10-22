@@ -37,7 +37,7 @@ export interface ResultadoScoring {
  * Ruta C: 8 preguntas puntuadas, rango 8-24 → 8-13 · 14-19 · 20-24.
  * Recalibrar con datos reales si la fase alta resulta muy fácil de alcanzar.
  */
-const UMBRALES: Record<Ruta, Array<{ hasta: number; fase: FaseId }>> = {
+export const UMBRALES: Record<Ruta, Array<{ hasta: number; fase: FaseId }>> = {
   A: [
     { hasta: 11, fase: "A1" },
     { hasta: 16, fase: "A2" },

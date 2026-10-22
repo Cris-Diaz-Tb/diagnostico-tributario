@@ -49,6 +49,16 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async rewrites() {
+    // Metadatos OAuth del conector MCP de claude.ai. claude.ai los busca en
+    // la raíz y también con la ruta del recurso al final (/api/mcp).
+    return [
+      { source: "/.well-known/oauth-protected-resource", destination: "/api/oauth/recurso" },
+      { source: "/.well-known/oauth-protected-resource/:path*", destination: "/api/oauth/recurso" },
+      { source: "/.well-known/oauth-authorization-server", destination: "/api/oauth/metadatos" },
+      { source: "/.well-known/oauth-authorization-server/:path*", destination: "/api/oauth/metadatos" },
+    ];
+  },
   async headers() {
     return [
       {

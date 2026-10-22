@@ -126,7 +126,7 @@ function credenciales(): { token: string; locationId: string } | null {
 /** Llamada a la API de GHL. Devuelve el JSON, o null si falló (queda log). */
 async function llamarGhl(
   ruta: string,
-  metodo: "POST" | "PUT",
+  metodo: "GET" | "POST" | "PUT",
   cuerpo: unknown,
   token: string
 ): Promise<Record<string, unknown> | null> {
@@ -139,7 +139,7 @@ async function llamarGhl(
         "Content-Type": "application/json",
         Accept: "application/json",
       },
-      body: JSON.stringify(cuerpo),
+      body: metodo === "GET" ? undefined : JSON.stringify(cuerpo),
     });
     if (!res.ok) {
       const detalle = await res.text();
@@ -151,6 +151,23 @@ async function llamarGhl(
     console.error(`[crm] Fallo llamando a GoHighLevel ${metodo} ${ruta}:`, err);
     return null;
   }
+}
+
+/**
+ * Lectura de GHL para el MCP de diagnósticos. null si no hay credenciales
+ * o si la llamada falló (queda log). Nunca escribe.
+ */
+export async function leerGhl(
+  ruta: string,
+  { metodo = "GET", cuerpo }: { metodo?: "GET" | "POST"; cuerpo?: unknown } = {}
+): Promise<Record<string, unknown> | null> {
+  const cred = credenciales();
+  if (!cred) return null;
+  return llamarGhl(ruta, metodo, cuerpo, cred.token);
+}
+
+export function locationIdGhl(): string | null {
+  return credenciales()?.locationId ?? null;
 }
 
 /**
